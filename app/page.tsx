@@ -13,7 +13,7 @@ import { TextTestModal } from "@/components/TextTestModal";
 import { AlertTriangle } from "lucide-react";
 
 export default function Home() {
-  const [currentView, setCurrentView] = useState<"storefront" | "aria">("aria");
+  const [currentView, setCurrentView] = useState<"storefront" | "aria">("storefront");
   const [initialPrompt, setInitialPrompt] = useState<string | null>(null);
 
   const [liveState, setLiveState] = useState<LiveSessionState>("idle");
