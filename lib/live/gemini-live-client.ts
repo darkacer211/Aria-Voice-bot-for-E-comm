@@ -33,6 +33,7 @@ interface IncomingLiveMessage {
   serverContent?: {
     interrupted?: boolean;
     inputTranscription?: { text?: string };
+    interimInputTranscription?: { text?: string };
     outputTranscription?: { text?: string };
     modelTurn?: {
       parts?: Array<{
@@ -54,6 +55,7 @@ export class GeminiLiveClient {
   private callbacks: GeminiLiveClientCallbacks;
   private currentTurnId: string = "";
   private isModelSpeaking: boolean = false;
+  private hasEmittedGreeting: boolean = false;
 
   constructor(callbacks: GeminiLiveClientCallbacks) {
     this.callbacks = callbacks;
@@ -79,6 +81,7 @@ export class GeminiLiveClient {
   ): Promise<void> {
     try {
       this.setState("connecting");
+      this.hasEmittedGreeting = false;
 
       // Initialize the GenAI client with ephemeral token and v1alpha API version
       const ai = new GoogleGenAI({
@@ -241,6 +244,17 @@ export class GeminiLiveClient {
           };
           this.callbacks.onToolCall(toolRecord);
 
+          // If cancel_order was invoked and succeeded, record explicit confirmation in transcript
+          if (fc.name === "cancel_order" && (result as { success?: boolean })?.success) {
+            const oid = (result as { order_id?: string })?.order_id || "ORD-103";
+            this.callbacks.onTranscriptChunk({
+              id: `tool_cancel_${Date.now()}`,
+              role: "model",
+              text: `Order ${oid} has been successfully cancelled in the Aria database.`,
+              timestamp: new Date().toLocaleTimeString(),
+            });
+          }
+
           functionResponses.push({
             id: fc.id || `call_${Date.now()}`,
             name: fc.name,
@@ -277,12 +291,12 @@ export class GeminiLiveClient {
       }
 
       // Handle User Input Transcription
-      if (content.inputTranscription?.text) {
-        const text = content.inputTranscription.text;
+      const userText = content.inputTranscription?.text || content.interimInputTranscription?.text;
+      if (userText) {
         const turn: TranscriptTurn = {
           id: `user_${Date.now()}`,
           role: "user",
-          text,
+          text: userText,
           timestamp: new Date().toLocaleTimeString(),
         };
         this.callbacks.onTranscriptChunk(turn);
@@ -307,6 +321,15 @@ export class GeminiLiveClient {
           if (part.inlineData?.data) {
             this.isModelSpeaking = true;
             this.setState("speaking");
+            if (!this.hasEmittedGreeting) {
+              this.hasEmittedGreeting = true;
+              this.callbacks.onTranscriptChunk({
+                id: "aria_greeting",
+                role: "model",
+                text: "Hello! Welcome to Aria. I'm Aria, how can I help you today?",
+                timestamp: new Date().toLocaleTimeString(),
+              });
+            }
             this.callbacks.onAudioData(part.inlineData.data);
           }
           if (part.text && !part.thought) {

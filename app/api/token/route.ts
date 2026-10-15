@@ -52,9 +52,6 @@ export async function POST(req: NextRequest) {
         newSessionExpireTime,
         liveConnectConstraints: {
           model: CONFIG.LIVE_MODEL,
-          config: {
-            responseModalities: [Modality.AUDIO],
-          },
         },
         httpOptions: { apiVersion: "v1alpha" },
       },

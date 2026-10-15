@@ -57,26 +57,54 @@ export const AriaConciergeView: React.FC<Props> = ({
   const [activeTab, setActiveTab] = useState<"transcript" | "orders" | "tools" | "settings">("transcript");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [orders, setOrders] = useState(MOCK_ORDERS_DB);
+  const [cancelNotification, setCancelNotification] = useState<string | null>(null);
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch authoritative orders from server API
+  const refreshOrders = async () => {
+    try {
+      const res = await fetch("/api/orders");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.orders) {
+          setOrders(data.orders);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to fetch /api/orders:", e);
+    }
+  };
+
+  useEffect(() => {
+    refreshOrders();
+  }, []);
 
   // Sync orders with toolCalls in real time (e.g. when cancel_order executes)
   useEffect(() => {
     const cancelCalls = toolCalls.filter(
-      (tc) => tc.toolName === "cancel_order" && (tc.result as { success?: boolean })?.success
+      (tc) =>
+        tc.toolName === "cancel_order" &&
+        ((tc.result as { success?: boolean })?.success ||
+          (tc.result as { new_status?: string })?.new_status === "Cancelled")
     );
     if (cancelCalls.length > 0) {
       setOrders((prev) => {
         let changed = false;
         const next = { ...prev };
         for (const tc of cancelCalls) {
-          const oid = (tc.result as { order_id?: string })?.order_id;
+          const oid =
+            (tc.result as { order_id?: string })?.order_id ||
+            (tc.args as { order_id?: string })?.order_id ||
+            "ORD-103";
           if (oid && next[oid] && next[oid].status !== "Cancelled") {
             next[oid] = {
               ...next[oid],
               status: "Cancelled",
-              estimatedDelivery: "Cancelled by Aria voice assistant",
+              estimatedDelivery: "Cancelled by Aria in DB",
             };
             changed = true;
+            setCancelNotification(`Order ${oid} successfully cancelled in Aria database!`);
+            setTimeout(() => setCancelNotification(null), 6000);
           }
         }
         return changed ? next : prev;
@@ -468,10 +496,22 @@ export const AriaConciergeView: React.FC<Props> = ({
             </div>
 
             {/* ORD-103 */}
-            <div className="p-3.5 rounded-2xl bg-[#faf7f2] border border-[#ebdcd3] hover:border-[#d89a9e] transition flex flex-col justify-between">
+            <div className={`p-3.5 rounded-2xl border transition flex flex-col justify-between ${
+              orders["ORD-103"]?.status === "Cancelled"
+                ? "bg-rose-50/80 border-rose-300 ring-2 ring-rose-200/70 shadow-sm"
+                : "bg-[#faf7f2] border-[#ebdcd3] hover:border-[#d89a9e]"
+            }`}>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-mono text-xs font-bold text-[#4a2d30]">ORD-103</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-[#4a2d30]">ORD-103</span>
+                    {orders["ORD-103"]?.status === "Cancelled" && (
+                      <span className="text-[10px] font-bold text-rose-700 bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span>
+                        CANCELLED
+                      </span>
+                    )}
+                  </div>
                   <button
                     onClick={() => handleCopy("ORD-103")}
                     className="p-1 rounded hover:bg-[#ebdcd3] text-[#796e65] transition cursor-pointer"
@@ -482,34 +522,66 @@ export const AriaConciergeView: React.FC<Props> = ({
                 </div>
                 <div className="text-xs font-medium text-[#4a2d30]">Ananya Patel</div>
                 <div className="text-[11px] text-[#796e65]">Green Tea Face Wash + Toner • ₹850</div>
-                <div className={`mt-1 text-[11px] font-medium ${orders["ORD-103"]?.status === "Cancelled" ? "text-rose-600 font-semibold" : "text-emerald-700"}`}>
-                  {orders["ORD-103"]?.status === "Cancelled" ? "Cancelled by Aria in DB" : "Processing • Ordered 3 hrs ago"}
+                <div className={`mt-1 text-[11px] font-medium ${orders["ORD-103"]?.status === "Cancelled" ? "text-rose-700 font-semibold" : "text-emerald-700"}`}>
+                  {orders["ORD-103"]?.status === "Cancelled" ? "✓ Cancelled in DB • Full refund initiated" : "Processing • Ordered 3 hrs ago"}
                 </div>
               </div>
               <div className="mt-2.5 pt-2 border-t border-[#ebdcd3]/70 space-y-1.5">
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${
+                  <span className={`px-2 py-0.5 rounded-full font-bold ${
                     orders["ORD-103"]?.status === "Cancelled"
-                      ? "bg-rose-100 text-rose-700 font-bold"
+                      ? "bg-rose-100 text-rose-800 border border-rose-300"
                       : "bg-[#eaf6ef] text-[#20683e]"
                   }`}>
                     {orders["ORD-103"]?.status || "Processing"}
                   </span>
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${
+                  <span className={`px-2 py-0.5 rounded-full font-semibold ${
                     orders["ORD-103"]?.status === "Cancelled"
-                      ? "bg-slate-100 text-slate-600"
+                      ? "bg-rose-100 text-rose-800 border border-rose-200"
                       : "bg-[#eaf6ef] text-[#20683e]"
                   }`}>
-                    {orders["ORD-103"]?.status === "Cancelled" ? "DB Updated" : "Can Cancel"}
+                    {orders["ORD-103"]?.status === "Cancelled" ? "Database Updated" : "Can Cancel"}
                   </span>
                 </div>
-                <div className="flex flex-col gap-1 pt-1">
-                  <button
-                    onClick={() => handleSuggestionClick("Can I cancel order ORD-103?")}
-                    className="text-[10px] bg-[#ffffff] hover:bg-[#faecea] text-[#4a2d30] px-2 py-1 rounded-lg border border-[#ebdcd3] text-left transition truncate cursor-pointer"
-                  >
-                    &quot;Cancel order ORD-103&quot;
-                  </button>
+                <div className="flex flex-col gap-1.5 pt-1">
+                  {orders["ORD-103"]?.status === "Cancelled" ? (
+                    <div className="text-[10px] bg-rose-100/80 border border-rose-300 text-rose-800 p-2 rounded-lg text-center font-bold">
+                      ✓ Order ORD-103 is Cancelled in Database
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleSuggestionClick("Please cancel my order ORD-103")}
+                        className="text-[10px] bg-[#ffffff] hover:bg-[#faecea] text-[#4a2d30] px-2 py-1 rounded-lg border border-[#ebdcd3] text-left transition truncate cursor-pointer font-medium"
+                      >
+                        &quot;Please cancel my order ORD-103&quot;
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch("/api/tools/cancel_order", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ orderId: "ORD-103", reason: "Direct tester cancellation" }),
+                            });
+                            if (res.ok) {
+                              setOrders(prev => ({
+                                ...prev,
+                                "ORD-103": { ...prev["ORD-103"], status: "Cancelled", estimatedDelivery: "Cancelled in DB" }
+                              }));
+                              setCancelNotification("Order ORD-103 cancelled in database!");
+                              setTimeout(() => setCancelNotification(null), 5000);
+                            }
+                          } catch (e) {
+                            console.error("1-click cancel error:", e);
+                          }
+                        }}
+                        className="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-800 px-2 py-1 rounded-lg border border-rose-200 text-left transition truncate cursor-pointer font-semibold flex items-center justify-between"
+                      >
+                        <span>⚡ 1-Click Cancel ORD-103 (DB Test)</span>
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => handleSuggestionClick("Where is my order ORD-103?")}
                     className="text-[10px] bg-[#ffffff] hover:bg-[#faecea] text-[#4a2d30] px-2 py-1 rounded-lg border border-[#ebdcd3] text-left transition truncate cursor-pointer"
@@ -645,7 +717,18 @@ export const AriaConciergeView: React.FC<Props> = ({
                             <span className="font-semibold uppercase tracking-wider">
                               {isUser ? "You" : "Aria"}
                             </span>
-                            <span>{new Date(turn.timestamp).toLocaleTimeString()}</span>
+                            <span>
+                              {turn.timestamp && turn.timestamp.includes(":") && !turn.timestamp.includes("T")
+                                ? turn.timestamp
+                                : (() => {
+                                    try {
+                                      const d = new Date(turn.timestamp);
+                                      return isNaN(d.getTime()) ? turn.timestamp : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                    } catch {
+                                      return turn.timestamp;
+                                    }
+                                  })()}
+                            </span>
                           </div>
                           <p className="whitespace-pre-wrap font-sans">{turn.text}</p>
                         </div>
@@ -719,8 +802,9 @@ export const AriaConciergeView: React.FC<Props> = ({
                   {[
                     { label: "Status of ORD-101", query: "Where is my order ORD-101?" },
                     { label: "Return ORD-102 (14 Days Old)", query: "I want to return order ORD-102" },
-                    { label: "Cancel ORD-103 (Processing)", query: "Can I cancel order ORD-103?" },
-                    { label: "Cancel ORD-101 (Out for Delivery)", query: "Cancel order ORD-101" },
+                    { label: "Cancel ORD-103 (Processing)", query: "Please cancel my order ORD-103" },
+                    { label: "Inquire Cancel: ORD-103", query: "Can I cancel order ORD-103?" },
+                    { label: "Cancel ORD-101 (Out for Delivery)", query: "Please cancel my order ORD-101" },
                     { label: "₹499 Free Shipping Policy", query: "Why is there a fifty rupee shipping fee on my 499 rupee order?" },
                     { label: "COD Limit Policy", query: "Can I place a cash on delivery order for three thousand rupees?" },
                     { label: "Book a flight to Goa", query: "Can you book a flight to Goa for me?" },

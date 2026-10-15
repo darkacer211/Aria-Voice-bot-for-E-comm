@@ -263,6 +263,31 @@ export const PostCallSummary: React.FC<Props> = ({
                   <p className="text-xs text-[#4a2d30] leading-relaxed">{summary.call_summary}</p>
                 </div>
 
+                {/* Prominent Cancellation Status Indicator */}
+                {(summary.customer_intent === "CANCELLATION_REQUEST" ||
+                  toolCalls.some((t) => t.toolName === "cancel_order")) && (
+                  <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 flex items-center justify-between text-xs text-rose-900">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-600 inline-block animate-ping"></span>
+                      <span className="font-bold">Cancellation Status:</span>
+                      <span className="text-rose-800 font-medium">
+                        {summary.order_id ? `Order ${summary.order_id}` : "Customer Order"}
+                      </span>
+                    </div>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
+                        summary.resolution_status === "RESOLVED"
+                          ? "bg-rose-100 text-rose-800 border-rose-300"
+                          : "bg-amber-100 text-amber-900 border-amber-300"
+                      }`}
+                    >
+                      {summary.resolution_status === "RESOLVED"
+                        ? "CANCELLED IN DATABASE"
+                        : "NOT CANCELLED (OUT FOR DELIVERY / DELIVERED)"}
+                    </span>
+                  </div>
+                )}
+
                 {/* Policy Applied & Tools Used */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="p-3.5 rounded-2xl bg-[#faf7f2] border border-[#ebdcd3]">
@@ -337,7 +362,18 @@ export const PostCallSummary: React.FC<Props> = ({
                           <span className="uppercase tracking-wider">
                             {turn.role === "user" ? "Customer" : "Aria"}
                           </span>
-                          <span>{new Date(turn.timestamp).toLocaleTimeString()}</span>
+                          <span>
+                            {turn.timestamp && turn.timestamp.includes(":") && !turn.timestamp.includes("T")
+                              ? turn.timestamp
+                              : (() => {
+                                  try {
+                                    const d = new Date(turn.timestamp);
+                                    return isNaN(d.getTime()) ? turn.timestamp : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                  } catch {
+                                    return turn.timestamp;
+                                  }
+                                })()}
+                          </span>
                         </div>
                         <p className="whitespace-pre-wrap leading-relaxed">{turn.text}</p>
                       </div>

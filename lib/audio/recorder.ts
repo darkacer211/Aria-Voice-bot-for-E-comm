@@ -5,6 +5,22 @@ export interface AudioRecorderCallbacks {
   onChunk: (base64Pcm: string, rms?: number) => void;
   onVolume: (level: number) => void;
   onError: (error: Error) => void;
+  onSpeech?: (text: string) => void;
+}
+
+interface BrowserSpeechRecognitionEvent {
+  resultIndex: number;
+  results: Array<Array<{ transcript: string }> & { isFinal?: boolean }>;
+}
+
+interface BrowserSpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  start: () => void;
+  stop: () => void;
 }
 
 export class AudioRecorder {
@@ -12,6 +28,7 @@ export class AudioRecorder {
   private audioContext: AudioContext | null = null;
   private workletNode: AudioWorkletNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
+  private recognition: BrowserSpeechRecognition | null = null;
   private callbacks: AudioRecorderCallbacks;
   private isRecording: boolean = false;
 
@@ -83,6 +100,38 @@ export class AudioRecorder {
         }
       };
 
+      // 7. Optional client-side speech recognition for instant real-time transcription
+      if (typeof window !== "undefined") {
+        const SpeechRec =
+          (window as unknown as { SpeechRecognition?: new () => BrowserSpeechRecognition })
+            .SpeechRecognition ||
+          (window as unknown as { webkitSpeechRecognition?: new () => BrowserSpeechRecognition })
+            .webkitSpeechRecognition;
+
+        if (SpeechRec) {
+          try {
+            this.recognition = new SpeechRec();
+            this.recognition.continuous = true;
+            this.recognition.interimResults = false;
+            this.recognition.lang = "en-IN";
+            this.recognition.onresult = (e: BrowserSpeechRecognitionEvent) => {
+              for (let i = e.resultIndex; i < e.results.length; ++i) {
+                const phrase = e.results[i][0]?.transcript?.trim();
+                if (phrase && this.callbacks.onSpeech) {
+                  this.callbacks.onSpeech(phrase);
+                }
+              }
+            };
+            this.recognition.onerror = () => {
+              // Non-fatal, live speech recognition error
+            };
+            this.recognition.start();
+          } catch (e) {
+            console.warn("[AudioRecorder] SpeechRecognition start note:", e);
+          }
+        }
+      }
+
       this.isRecording = true;
     } catch (err: unknown) {
       this.stop();
@@ -97,6 +146,17 @@ export class AudioRecorder {
    */
   public stop(): void {
     this.isRecording = false;
+
+    if (this.recognition) {
+      try {
+        this.recognition.onresult = null;
+        this.recognition.onerror = null;
+        this.recognition.stop();
+      } catch (e) {
+        console.warn("Error stopping SpeechRecognition:", e);
+      }
+      this.recognition = null;
+    }
 
     if (this.workletNode) {
       try {
