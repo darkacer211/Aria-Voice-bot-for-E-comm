@@ -28,6 +28,11 @@ export interface PostCallSummary {
   tools_used: string[];
   customer_sentiment: CustomerSentiment;
   follow_up_needed: boolean;
+  // Compatibility aliases
+  intent?: CustomerIntent;
+  orderId?: string | null;
+  resolutionStatus?: ResolutionStatus;
+  summary?: string;
 }
 
 export interface SummaryRequestBody {

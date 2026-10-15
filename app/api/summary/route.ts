@@ -216,11 +216,27 @@ INSTRUCTIONS:
       summary = buildFallbackSummary(body);
     }
 
-    return NextResponse.json({ summary, isFallback: false });
+    const enhancedSummary: PostCallSummary = {
+      ...summary,
+      intent: summary.customer_intent,
+      orderId: summary.order_id,
+      resolutionStatus: summary.resolution_status,
+      summary: summary.call_summary,
+    };
+
+    return NextResponse.json({ summary: enhancedSummary, isFallback: false });
   } catch (err: unknown) {
     console.error("[/api/summary error]:", err);
     // Even if Gemini API errors out, return clean fallback JSON
     const body: SummaryRequestBody = await req.json().catch(() => ({ transcript: [] }));
-    return NextResponse.json({ summary: buildFallbackSummary(body), isFallback: true });
+    const fallback = buildFallbackSummary(body);
+    const enhancedFallback: PostCallSummary = {
+      ...fallback,
+      intent: fallback.customer_intent,
+      orderId: fallback.order_id,
+      resolutionStatus: fallback.resolution_status,
+      summary: fallback.call_summary,
+    };
+    return NextResponse.json({ summary: enhancedFallback, isFallback: true });
   }
 }
