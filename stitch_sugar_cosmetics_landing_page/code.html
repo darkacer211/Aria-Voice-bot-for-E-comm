@@ -1,0 +1,631 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Skincare - Interactive Storefront &amp; Aria Concierge Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&amp;family=Outfit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4a2d30;
+      --primary-hover: #3d2427;
+      --rose-gold: #d89a9e;
+      --rose-accent: #e8a598;
+      --surface: #fcf9f4;
+      --surface-card: #ffffff;
+      --text-muted: #796e65;
+    }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--surface);
+      color: var(--primary);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .font-serif-luxury {
+      font-family: 'Newsreader', serif;
+    }
+    
+    /* View Transitions */
+    .view-container {
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .view-hidden {
+      display: none !important;
+      opacity: 0;
+      transform: scale(0.985);
+    }
+    .view-active {
+      display: block !important;
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    /* Floating Aria Bot Orb */
+    .aria-orb-pulse {
+      box-shadow: 0 10px 30px rgba(131, 80, 84, 0.28), 0 0 25px rgba(216, 154, 158, 0.45);
+      animation: floatBreath 3.5s ease-in-out infinite;
+    }
+    @keyframes floatBreath {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-7px) scale(1.025); }
+    }
+    
+    /* Voice visualizer pulsing in Aria screen */
+    .pulse-ring {
+      animation: ripple 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+    }
+    @keyframes ripple {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    
+    /* Active call wave bars */
+    .wave-bar {
+      animation: wave 1.2s ease-in-out infinite;
+    }
+    @keyframes wave {
+      0%, 100% { height: 12px; }
+      50% { height: 38px; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#fcf9f4] text-[#4a2d30] antialiased selection:bg-[#d89a9e]/20">
+
+  <!-- ========================================== -->
+  <!-- 1. Aura Skincare Storefront View           -->
+  <!-- ========================================== -->
+  <div id="storefront-view" class="view-container view-active w-full relative">
+    
+    <!-- Top Global Notification Banner -->
+    <div class="bg-[#f3ece4] border-b border-[#e9ded2] text-[#4a2d30] py-2 px-4 text-xs font-medium text-center flex items-center justify-center gap-3">
+      <span class="inline-block w-2 h-2 rounded-full bg-[#d89a9e] animate-ping"></span>
+      <span class="">Complimentary Botanical Silk Elixir on all orders over ₹2,499</span>
+      <span class="hidden md:inline text-[#d89a9e] font-semibold">| Code: BOTANICAL</span>
+      <span class="text-[11px] bg-[#ffffff] border border-[#d89a9e]/40 px-2 py-0.5 rounded-full ml-2 text-[#796e65]">Interactive Prototype</span>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 bg-[#fcf9f4]/95 backdrop-blur-md border-b border-[#ebdcd3]/70">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-4">
+          <div class="cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <span class="font-serif-luxury text-2xl md:text-3xl tracking-widest text-[#4a2d30] font-normal uppercase">Aura Skincare</span>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="hidden lg:flex items-center flex-1 max-w-md mx-10 relative">
+          <div class="relative w-full">
+            <input type="text" placeholder="Try 'Glide Peptide Lipstick' or 'Dewy Foundation'..." class="w-full bg-[#f6f3ee] text-sm text-[#4a2d30] placeholder-[#9a8c80] pl-10 pr-24 py-2.5 rounded-full border border-[#e4ded6] focus:outline-none focus:border-[#d89a9e] transition">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <svg class="w-4 h-4 text-[#9a8c80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <button class="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-[#4a2d30] text-[#ffffff] text-xs font-medium rounded-full hover:bg-[#3d2427] transition">Search</button>
+          </div>
+        </div>
+
+        <!-- Utility Nav Items -->
+        <div class="flex items-center gap-6 text-sm text-[#4a2d30]">
+          <div class="hidden md:flex items-center gap-1.5 hover:text-[#d89a9e] transition cursor-pointer">
+            <svg class="w-4 h-4 text-[#796e65]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+            <span class="text-xs">Boutiques</span>
+          </div>
+          <div class="hidden sm:flex items-center gap-1.5 hover:text-[#d89a9e] transition cursor-pointer">
+            <svg class="w-4 h-4 text-[#796e65]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            <span class="text-xs">Wishlist</span>
+          </div>
+          <!-- Voice Concierge Header Quick Link -->
+          <button onclick="navigateToView('aria')" class="hidden sm:flex items-center gap-2 bg-[#f4ebe6] hover:bg-[#ebdcd3] text-[#4a2d30] px-3.5 py-1.5 rounded-full border border-[#d89a9e]/40 transition text-xs font-medium shadow-sm group">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="">Aria AI Voice</span>
+            <span class="text-[10px] bg-[#d89a9e]/30 px-1.5 py-0.2 rounded text-[#4a2d30] font-semibold">Gemini</span>
+          </button>
+          <div class="flex items-center gap-1.5 hover:text-[#d89a9e] transition cursor-pointer relative">
+            <svg class="w-5 h-5 text-[#4a2d30]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            <span class="w-4 h-4 bg-[#4a2d30] text-[#ffffff] rounded-full text-[10px] flex items-center justify-center font-bold absolute -top-1.5 -right-2">2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories Sub-nav -->
+      <div class="border-t border-[#f0e4dc] bg-[#fcf9f4]/70">
+        <div class="max-w-7xl mx-auto px-6 overflow-x-auto scrollbar-none py-2.5 flex items-center justify-between text-xs tracking-wider uppercase text-[#695d54] gap-6 whitespace-nowrap">
+          <a href="#" class="hover:text-[#4a2d30] hover:font-medium transition">Lips</a>
+          <a href="#" class="hover:text-[#4a2d30] hover:font-medium transition">Eyes</a>
+          <a href="#" class="hover:text-[#4a2d30] hover:font-medium transition">Face &amp; Base</a>
+          <a href="#" class="hover:text-[#4a2d30] hover:font-medium transition">Nails</a>
+          <a href="#" class="hover:text-[#4a2d30] hover:font-medium transition">Botanical Skin</a>
+          <a href="#" class="hover:text-[#4a2d30] hover:font-medium transition">Elite Gifting</a>
+          <a href="#" class="text-[#b26a6e] font-semibold hover:text-[#4a2d30] transition">Under 249 Luxe</a>
+          <a href="#" class="text-[#b85b4b] font-semibold hover:text-[#4a2d30] transition">Festive Offers</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Promotional Banner -->
+    <section class="max-w-7xl mx-auto px-6 py-6">
+      <div class="relative rounded-3xl overflow-hidden border border-[#ebdcd3] shadow-sm bg-gradient-to-r from-[#f7efe9] via-[#f9f3ed] to-[#f4ebe6] min-h-[360px] md:min-h-[440px] flex items-center">
+        <!-- Background Banner Image -->
+        <img src="https://lh3.googleusercontent.com/aida/AEtjO1U01jLwtRE5hlkfwIZIE_AOrvmespBaBZDOi7K4nbTLCGNxzlQwX2Fb0KARUL-wqbZECU7wB63LRKoRZQhLX_RrmsFNZIKQAPwkaEvAq0YnKIcz3oL55sQySW9pNmWnQZkF4HlgVL8N4NLNUNQ52ANqnWs8Y25SNXmOSl520lN3Vur9ipGVhOdKY7nxgb5OT4k3mQ5L3eco1BMrWVCWjWGrD1DAzgyrhu0miemWpg4BBFfD2aIyWbd0Zs0" alt="Aura Festive Collection" class="absolute inset-0 w-full h-full object-cover opacity-90 mix-blend-multiply">
+        <div class="absolute inset-0 bg-gradient-to-r from-[#fcf9f4]/95 via-[#fcf9f4]/70 to-transparent"></div>
+        
+        <!-- Content Overlay -->
+        <div class="relative z-10 p-8 md:p-14 max-w-xl">
+          <div class="inline-block px-3 py-1 bg-[#ffffff]/80 backdrop-blur-sm border border-[#d89a9e]/40 rounded-full text-xs font-semibold uppercase tracking-wider text-[#9a4b52] mb-4">
+            Limited Festive Edition
+          </div>
+          <h1 class="font-serif-luxury text-3xl md:text-5xl font-light text-[#3c2225] leading-tight mb-4">
+            Shop For ₹2,999 &amp; get <span class="font-normal italic text-[#9a4b52]">₹700 OFF</span>
+          </h1>
+          <p class="text-sm md:text-base text-[#6f635a] mb-8 leading-relaxed font-light">
+            Festive Glam Collection: Instant Radiance, high-payoff smudge-resistant botanical pigments, and all-night velvety wear.
+          </p>
+          <div class="flex flex-wrap items-center gap-4">
+            <button class="px-7 py-3 rounded-full bg-[#4a2d30] text-[#ffffff] text-xs font-medium tracking-wide uppercase hover:bg-[#382124] transition shadow-md">
+              Shop Offers
+            </button>
+            <button onclick="navigateToView('aria')" class="px-6 py-3 rounded-full bg-[#ffffff]/90 hover:bg-[#ffffff] text-[#4a2d30] border border-[#d89a9e]/60 text-xs font-medium tracking-wide flex items-center gap-2 shadow-sm transition">
+              <span class="w-2 h-2 rounded-full bg-[#d89a9e] animate-ping"></span>
+              Consult Voice Concierge
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Category Highlights Pills -->
+    <section class="max-w-7xl mx-auto px-6 py-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-serif-luxury text-2xl font-light text-[#4a2d30]">Shop by Category</h2>
+        <span class="text-xs text-[#8c7f76] italic">Swipe to explore botanical beauty edits</span>
+      </div>
+      <div class="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-3 sm:gap-4 text-center">
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#faecea] flex items-center justify-center text-[#9a4b52] group-hover:scale-110 transition">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">Lips</span>
+          <span class="text-[10px] text-[#93857b]">Matte &amp; Velvet</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#f4ebe6] flex items-center justify-center text-[#7e5c54] group-hover:scale-110 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">Eyes</span>
+          <span class="text-[10px] text-[#93857b]">Kajal &amp; Liners</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#faecea] flex items-center justify-center text-[#9a4b52] group-hover:scale-110 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">Face</span>
+          <span class="text-[10px] text-[#93857b]">Sticks &amp; Dewy</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#f4ebe6] flex items-center justify-center text-[#7e5c54] group-hover:scale-110 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">Nails</span>
+          <span class="text-[10px] text-[#93857b]">Luxe Lacquers</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#faecea] flex items-center justify-center text-[#9a4b52] group-hover:scale-110 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">Kits</span>
+          <span class="text-[10px] text-[#93857b]">Curated Bundles</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#e8f2ec] flex items-center justify-center text-[#4b7a63] group-hover:scale-110 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">Skin</span>
+          <span class="text-[10px] text-[#93857b]">Mists &amp; Elixirs</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#fbf0df] flex items-center justify-center text-[#aa7932] group-hover:scale-110 transition">
+            <span class="font-bold text-xs">₹249</span>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">249 Store</span>
+          <span class="text-[10px] text-[#93857b]">Treats Under ₹249</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-[#ffffff] border border-[#ebdcd3] hover:border-[#d89a9e] hover:shadow-sm transition cursor-pointer group">
+          <div class="w-12 h-12 mx-auto rounded-full bg-[#f1f7ed] flex items-center justify-center text-[#55865d] group-hover:scale-110 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+          </div>
+          <span class="block mt-2 text-xs font-medium text-[#4a2d30]">Clean</span>
+          <span class="text-[10px] text-[#93857b]">Botanical Care</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- New Launches Section -->
+    <section class="max-w-7xl mx-auto px-6 py-8 border-t border-[#ebdcd3]/60">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <span class="text-xs uppercase tracking-widest text-[#9a4b52] font-semibold">Fresh from the Botanical Lab</span>
+          <h2 class="font-serif-luxury text-2xl md:text-3xl font-light text-[#4a2d30]">New Launches</h2>
+        </div>
+        <a href="#" class="text-xs tracking-wider uppercase font-semibold text-[#4a2d30] hover:text-[#9a4b52] flex items-center gap-1 transition">
+          View All <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Product 1 -->
+        <div class="bg-[#ffffff] rounded-2xl border border-[#ebdcd3] p-4 flex flex-col justify-between hover:shadow-md transition group">
+          <div class="relative overflow-hidden rounded-xl bg-[#f7f2ed] mb-4 aspect-square flex items-center justify-center">
+            <img src="https://lh3.googleusercontent.com/aida/AEtjO1Un9-QMibnKubildR4vCG8sBVwVaWTyBLj1TY6x1u7pCAg2ZmlUHJZEtZCTEz5sEJPeSf-BZvXT2OKM7yCSDVMdGxnF9T7gffZpkEBgXyb0wifv7dSnW0XJjI4CkQkmQ7DXSFC3JbESBs-1SLVPxBEUx8MHHmlIcHBfX48tbdB0AgwbhpsqtEm0n0ajqA9NoK3I_JWUaJ8mhmTHmtBXQZAFgWNyBR8etz3Qan6QIS8BN_ypQep4JLkSAQKW" alt="Glide Peptide Serum Lipstick" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <span class="absolute top-2.5 left-2.5 bg-[#ffffff]/90 text-[#9a4b52] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#d89a9e]/40 shadow-xs">SAVE 25%</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1 text-[11px] text-[#8c7f76] mb-1">
+              <span class="text-amber-500">★ 4.8</span>
+              <span class="">(792 reviews)</span>
+            </div>
+            <h3 class="font-medium text-sm text-[#4a2d30] line-clamp-1">Glide Peptide Serum Lipstick</h3>
+            <p class="text-xs text-[#8c7f76] mb-3">12 Dewy Pigment Shades</p>
+            <div class="flex items-baseline gap-2 mb-4">
+              <span class="text-base font-semibold text-[#4a2d30]">₹412.00</span>
+              <span class="text-xs text-[#9d9187] line-through">₹549.00</span>
+              <span class="text-xs text-[#2e7d32] font-medium">25% off</span>
+            </div>
+          </div>
+          <button class="w-full py-2.5 rounded-full bg-[#4a2d30] text-[#ffffff] text-xs font-medium tracking-wide hover:bg-[#382124] transition">
+            Add to Cart
+          </button>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="bg-[#ffffff] rounded-2xl border border-[#ebdcd3] p-4 flex flex-col justify-between hover:shadow-md transition group">
+          <div class="relative overflow-hidden rounded-xl bg-[#f7f2ed] mb-4 aspect-square flex items-center justify-center">
+            <img src="https://lh3.googleusercontent.com/aida/AEtjO1Uz__BQ5Pb95_SmDt6lDk2A060LE9yzaX5j7IHhJdDH5QDUmpOQ2zWY9ED_4eb8WDrKwO8UcGYLjUgZm1KLUXNABADEZKcBDVIVj2Y1oDWaHEavFYPu6sB9FkXpPgbkIObxw8uSW0GVhh7QxetyAymg58sjuH1KOW1UKuPXQ1xVxMT1zDkJdFJYLzhoW6F9fD7GizMa5DlmS7dt-qnWMlC8EaPhPBP23r-A7KvLzcsIQfu3MotVOwCdh2M3" alt="Glide Peptide Plumping Gloss Stick" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <span class="absolute top-2.5 left-2.5 bg-[#ffffff]/90 text-[#9a4b52] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#d89a9e]/40 shadow-xs">NEW LAUNCH</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1 text-[11px] text-[#8c7f76] mb-1">
+              <span class="text-amber-500">★ 4.9</span>
+              <span class="">(701 reviews)</span>
+            </div>
+            <h3 class="font-medium text-sm text-[#4a2d30] line-clamp-1">Glide Peptide Plumping Gloss</h3>
+            <p class="text-xs text-[#8c7f76] mb-3">Infused with Squalane</p>
+            <div class="flex items-baseline gap-2 mb-4">
+              <span class="text-base font-semibold text-[#4a2d30]">₹594.00</span>
+              <span class="text-xs text-[#9d9187] line-through">₹699.00</span>
+              <span class="text-xs text-[#2e7d32] font-medium">15% off</span>
+            </div>
+          </div>
+          <button class="w-full py-2.5 rounded-full bg-[#4a2d30] text-[#ffffff] text-xs font-medium tracking-wide hover:bg-[#382124] transition">
+            Add to Cart
+          </button>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="bg-[#ffffff] rounded-2xl border border-[#ebdcd3] p-4 flex flex-col justify-between hover:shadow-md transition group">
+          <div class="relative overflow-hidden rounded-xl bg-[#f7f2ed] mb-4 aspect-square flex items-center justify-center">
+            <img src="https://lh3.googleusercontent.com/aida/AEtjO1VxhQFuplhb9x7xAfk4_rsLJUZbivI6i26Kf1_J405daWrDcdm6ZmiRqQhspJ8ah7uA-vSrMfz7oS740saBIiqr9hj-taJG2qs0xVxq3cirg6RNs9M4_pY47LIelsJ-IBzpVu1_cpxL1No5sVJvjMI1wwX-QI6AtCVeh0YbikwAqDyu813Gs5QG2zi4z6RG9ttPd9vkOPlj3gG-fCOqJEnS4YYuhB8u0l00CnnZxjJFeAZRNM2XYOzks2xm" alt="Bling Leader Illuminating Strobe" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <span class="absolute top-2.5 left-2.5 bg-[#ffffff]/90 text-[#9a4b52] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#d89a9e]/40 shadow-xs">VIRAL</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1 text-[11px] text-[#8c7f76] mb-1">
+              <span class="text-amber-500">★ 4.7</span>
+              <span class="">(310 reviews)</span>
+            </div>
+            <h3 class="font-medium text-sm text-[#4a2d30] line-clamp-1">Bling Leader Illuminating Strobe</h3>
+            <p class="text-xs text-[#8c7f76] mb-3">3 Iridescent Pearlescent Shades</p>
+            <div class="flex items-baseline gap-2 mb-4">
+              <span class="text-base font-semibold text-[#4a2d30]">₹499.00</span>
+              <span class="text-xs text-[#6e8a75] font-medium">Radiance Elixir</span>
+            </div>
+          </div>
+          <button class="w-full py-2.5 rounded-full bg-[#4a2d30] text-[#ffffff] text-xs font-medium tracking-wide hover:bg-[#382124] transition">
+            Add to Cart
+          </button>
+        </div>
+
+        <!-- Product 4 -->
+        <div class="bg-[#ffffff] rounded-2xl border border-[#ebdcd3] p-4 flex flex-col justify-between hover:shadow-md transition group">
+          <div class="relative overflow-hidden rounded-xl bg-[#f7f2ed] mb-4 aspect-square flex items-center justify-center">
+            <img src="https://lh3.googleusercontent.com/aida/AEtjO1VfzRMn6JhEzilhNuwiTTegLfUfC4eWwMd4prSOboNhLqP6ek4Po_VlSCr8Rq2mt5Iz4a38R8NuyxIuWycMGMLCxWOXZrGJcc0wCuwOVGdEyO6V46R23HxgIrsbYT1kDG93CKh4mwJP_2Y0p5i1-zt1gXkSDTrxiEKsWhd8OpH8VNQxhxBLs7Fdi6vXiEf-DiaUeoeULm6TW2Oy5hghp5ioIZCC8nX9Gi7VG5QjsACAdMGw5pTWkJtOyH-Q" alt="Partner In Shine Lip Gloss" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <span class="absolute top-2.5 left-2.5 bg-[#ffffff]/90 text-[#9a4b52] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#d89a9e]/40 shadow-xs">ON SALE</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1 text-[11px] text-[#8c7f76] mb-1">
+              <span class="text-amber-500">★ 4.8</span>
+              <span class="">(641 reviews)</span>
+            </div>
+            <h3 class="font-medium text-sm text-[#4a2d30] line-clamp-1">Partner In Shine Lip Gloss</h3>
+            <p class="text-xs text-[#8c7f76] mb-3">Non-Sticky Transferproof Glass</p>
+            <div class="flex items-baseline gap-2 mb-4">
+              <span class="text-base font-semibold text-[#4a2d30]">₹454.00</span>
+              <span class="text-xs text-[#9d9187] line-through">₹699.00</span>
+              <span class="text-xs text-[#2e7d32] font-medium">35% off</span>
+            </div>
+          </div>
+          <button class="w-full py-2.5 rounded-full bg-[#4a2d30] text-[#ffffff] text-xs font-medium tracking-wide hover:bg-[#382124] transition">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formula Spotlight Feature -->
+    <section class="max-w-7xl mx-auto px-6 py-8">
+      <div class="bg-[#ffffff] rounded-3xl border border-[#ebdcd3] p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div class="relative rounded-2xl overflow-hidden bg-[#f7efe9] aspect-square flex items-center justify-center p-6">
+          <img src="https://lh3.googleusercontent.com/aida/AEtjO1Un9-QMibnKubildR4vCG8sBVwVaWTyBLj1TY6x1u7pCAg2ZmlUHJZEtZCTEz5sEJPeSf-BZvXT2OKM7yCSDVMdGxnF9T7gffZpkEBgXyb0wifv7dSnW0XJjI4CkQkmQ7DXSFC3JbESBs-1SLVPxBEUx8MHHmlIcHBfX48tbdB0AgwbhpsqtEm0n0ajqA9NoK3I_JWUaJ8mhmTHmtBXQZAFgWNyBR8etz3Qan6QIS8BN_ypQep4JLkSAQKW" alt="Aura Peptide Formula" class="w-4/5 h-4/5 object-contain">
+          <div class="absolute bottom-4 left-4 right-4 bg-[#ffffff]/90 backdrop-blur-sm rounded-xl py-2 px-3 text-center border border-[#d89a9e]/40 text-xs font-medium text-[#4a2d30]">
+            Infused with High-Performance Botanical Actives
+          </div>
+        </div>
+        <div class="space-y-6">
+          <span class="text-xs uppercase tracking-widest text-[#9a4b52] font-semibold">The Iconic Botanical Formula</span>
+          <h2 class="font-serif-luxury text-3xl md:text-4xl font-light text-[#4a2d30] leading-tight">
+            Glide Peptide Serum Lipstick
+          </h2>
+          <p class="text-sm text-[#6c5f56] leading-relaxed">
+            Own the moment effortlessly. Meet the serum-infused matte that gives you rich, saturated colour with feather-light comfort. A skin-loving blend of <strong class="text-[#4a2d30]">Peptides, Hyaluronic Acid, Squalane, Bakuchiol and Jojoba Oil</strong> cocoons your lips in 8+ hours of continuous hydration and care.
+          </p>
+          <div class="grid grid-cols-3 gap-4 pt-2 border-t border-[#ebdcd3]">
+            <div>
+              <span class="font-serif-luxury text-2xl font-light text-[#4a2d30]">8+ Hrs</span>
+              <span class="block text-[11px] text-[#8c7f76] uppercase tracking-wider">Wear Time</span>
+            </div>
+            <div>
+              <span class="font-serif-luxury text-2xl font-light text-[#4a2d30]">5 Bio</span>
+              <span class="block text-[11px] text-[#8c7f76] uppercase tracking-wider">Actives Blend</span>
+            </div>
+            <div>
+              <span class="font-serif-luxury text-2xl font-light text-[#4a2d30]">100%</span>
+              <span class="block text-[11px] text-[#8c7f76] uppercase tracking-wider">Cloud Matte</span>
+            </div>
+          </div>
+          <div class="pt-2 flex gap-4">
+            <button class="px-6 py-3 rounded-full bg-[#4a2d30] text-[#ffffff] text-xs font-medium tracking-wide uppercase hover:bg-[#382124] transition">
+              Discover the Shades
+            </button>
+            <button onclick="navigateToView('aria')" class="px-5 py-3 rounded-full border border-[#d89a9e] text-[#4a2d30] hover:bg-[#f6eee9] text-xs font-medium tracking-wide transition flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#9a4b52]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+              Ask Aria for Shade Match
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-16 bg-[#f7f2ed] border-t border-[#ebdcd3] py-12 px-6">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#796e65]">
+        <div class="flex items-center gap-3">
+          <span class="font-serif-luxury text-lg text-[#4a2d30] uppercase tracking-widest">Aura Skincare</span>
+          <span class="">© 2026 Aura Skincare. All rights reserved.</span>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="#" class="hover:text-[#4a2d30]">Privacy Policy</a>
+          <a href="#" class="hover:text-[#4a2d30]">Terms of Service</a>
+          <a href="#" class="hover:text-[#4a2d30]">Store Locator</a>
+          <button onclick="navigateToView('aria')" class="text-[#9a4b52] hover:underline font-medium">Launch Aria Voice CX</button>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ======================================================== -->
+    <!-- Floating Viewport-Pinned Aria Bot Orb                     -->
+    <!-- When clicked, seamlessly switches to Aria Voice CX Screen -->
+    <!-- ======================================================== -->
+    
+
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- 2. Aria Voice CX Assistant Dedicated Screen-->
+  <!-- ========================================== -->
+  <div id="aria-view" class="view-container view-hidden min-h-screen w-full relative flex flex-col justify-between py-6 px-6 max-w-5xl mx-auto">
+    
+    <!-- Top Navigation Bar (Back Link) -->
+    <header class="w-full flex items-center justify-between pb-6 border-b border-[#ebdcd3]/70">
+      <button onclick="navigateToView('storefront')" class="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[#796e65] hover:text-[#4a2d30] transition">
+        <svg class="w-4 h-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        <span class="">Return to Aura Skincare</span>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-xs text-[#796e65]">Gemini Live API Connected</span>
+      </div>
+    </header>
+
+    <!-- Main Concierge Experience Container -->
+    <main class="w-full my-auto flex flex-col items-center justify-center py-8">
+      
+      <!-- Centered Bot Identity Block (Requested in Turn 10) -->
+      <div class="flex flex-col items-center text-center mb-8">
+        <!-- 3D Bot Emblem Logo centered -->
+        <div class="relative w-28 h-28 md:w-32 md:h-32 rounded-full p-1 bg-gradient-to-tr from-[#ebdcd3] to-[#ffffff] border-2 border-[#d89a9e] shadow-xl flex items-center justify-center mb-4 aria-orb-pulse">
+          <img src="https://lh3.googleusercontent.com/aida/AEtjO1VwblownPp2cx0jvooT8742aRV4nJyJ6o1GksS3Ua095WcuQt8aYGeopoGRr75rfNDGy3MjzBY3PPavrnX8O6jhnJ4j2ZGtAMlsNA3C1aWgks6cPbzzPa-6PBtuikFj21Rq0oy5pQaAkPOmGMsxQj2uFIpt-kdwRmLZlYZJ4jNX0AgrIk3FfcOIkWn5Ic5pdDaECS32PPMo7q7hC2d9CCN7VqUPmE2xYxAoE0kep_iFzm9YqaY1UITSJZTb" alt="Aria Bot Emblem" class="w-full h-full object-cover rounded-full">
+        </div>
+
+        <!-- Brand Name Beneath Logo -->
+        <h1 class="font-serif-luxury text-3xl md:text-4xl text-[#3c2225] font-light tracking-wide mb-1.5">
+          Aura Skincare
+        </h1>
+
+        <!-- Aria Voice CX Specialist Badge -->
+        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#f3ece4] border border-[#d89a9e]/50 text-xs text-[#82464b] font-medium tracking-wider uppercase mb-2">
+          <span class="">Aria • Voice CX Specialist</span>
+        </div>
+
+        <p class="text-sm text-[#796e65] font-light max-w-sm">
+          Your personal AI beauty &amp; skincare concierge
+        </p>
+      </div>
+
+      <!-- Action Box: Start / End Call -->
+      <div class="w-full max-w-md bg-[#ffffff] rounded-2xl border border-[#ebdcd3] shadow-sm p-4 mb-6 flex flex-col items-center justify-center text-center">
+        
+        <!-- Idle State Action Button -->
+        <button id="call-toggle-btn" onclick="toggleCallState()" class="w-full py-4 px-8 rounded-xl bg-[#4a2d30] text-[#ffffff] text-sm md:text-base font-medium tracking-wide flex items-center justify-center gap-3 hover:bg-[#382124] shadow-md hover:shadow-lg transition duration-200">
+          <svg id="call-icon" class="w-5 h-5 text-[#d89a9e]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-2.2 2.2a15.053 15.053 0 01-6.59-6.59l2.2-2.21a.96.96 0 00.25-1A11.36 11.36 0 018.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"></path>
+          </svg>
+          <span id="call-btn-text" class="">Start Call with Aria</span>
+        </button>
+
+        <p id="call-subtext" class="text-[11px] text-[#93857b] mt-2.5">
+          Microphone access requested on start • Hands-free voice consultation
+        </p>
+      </div>
+
+      <!-- Live Voice Stage & Visualizer Card -->
+      <div class="w-full max-w-3xl bg-[#ffffff]/90 rounded-3xl border border-[#ebdcd3] shadow-sm p-8 md:p-12 flex flex-col items-center text-center relative overflow-hidden min-h-[300px]">
+        
+        <!-- Visualizer Halo Ring -->
+        <div id="visualizer-stage" class="relative my-4 flex items-center justify-center">
+          <div id="pulse-bg" class="w-20 h-20 rounded-full bg-[#f4ebe6] border border-[#d89a9e]/40 flex items-center justify-center transition-all duration-300">
+            <!-- Spark / Listening Icon -->
+            <svg id="spark-icon" class="w-8 h-8 text-[#9a4b52]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            <!-- Animated Soundwaves (Active Call State) -->
+            <div id="soundwave-container" class="hidden items-center gap-1.5 h-10 px-2">
+              <span class="wave-bar w-1 bg-[#9a4b52] rounded-full" style="animation-delay: 0.1s"></span>
+              <span class="wave-bar w-1 bg-[#9a4b52] rounded-full" style="animation-delay: 0.3s"></span>
+              <span class="wave-bar w-1 bg-[#9a4b52] rounded-full" style="animation-delay: 0.2s"></span>
+              <span class="wave-bar w-1 bg-[#9a4b52] rounded-full" style="animation-delay: 0.4s"></span>
+              <span class="wave-bar w-1 bg-[#9a4b52] rounded-full" style="animation-delay: 0.15s"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Status Heading -->
+        <h2 id="assistant-heading" class="font-serif-luxury text-2xl md:text-3xl font-light text-[#3c2225] mb-2">
+          Ready when you are
+        </h2>
+        
+        <p id="assistant-instruction" class="text-xs md:text-sm text-[#796e65] max-w-lg mb-8 leading-relaxed font-light">
+          Click "Start Call with Aria" and allow microphone access to talk directly with your dedicated beauty &amp; skincare concierge.
+        </p>
+
+        <!-- Suggested Inquiry Pills (Clickable) -->
+        <div class="w-full pt-6 border-t border-[#f0e4dc]">
+          <div class="text-[10px] uppercase tracking-widest text-[#93857b] font-semibold mb-3">
+            Suggested Inquiries:
+          </div>
+          <div class="flex flex-wrap justify-center gap-2.5">
+            <button onclick="handleSuggestion('Help me find my shade in Ace of Face')" class="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs">
+              "Help me find my shade in Ace of Face"
+            </button>
+            <button onclick="handleSuggestion('Ingredients in Glide Peptide Serum?')" class="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs">
+              "Ingredients in Glide Peptide Serum?"
+            </button>
+            <button onclick="handleSuggestion('Morning barrier repair routine')" class="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs">
+              "Morning barrier repair routine"
+            </button>
+            <button onclick="handleSuggestion('Track my recent order')" class="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs">
+              "Track my recent order"
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Bottom Security / Assurance -->
+    <footer class="w-full pt-6 border-t border-[#ebdcd3]/70 text-center">
+      <p class="text-xs text-[#8c7f76] flex items-center justify-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-[#9a4b52]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
+        <span class="">Private &amp; secure consultation • Aura Skincare</span>
+      </p>
+    </footer>
+
+  </div>
+
+
+  <!-- Prototype Interactivity Logic -->
+  <script>
+    let isCallActive = false;
+
+    // View Navigation Switcher
+    function navigateToView(viewName) {
+      const storeView = document.getElementById('storefront-view');
+      const ariaView = document.getElementById('aria-view');
+
+      if (viewName === 'aria') {
+        storeView.classList.remove('view-active');
+        storeView.classList.add('view-hidden');
+
+        ariaView.classList.remove('view-hidden');
+        ariaView.classList.add('view-active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        ariaView.classList.remove('view-active');
+        ariaView.classList.add('view-hidden');
+
+        storeView.classList.remove('view-hidden');
+        storeView.classList.add('view-active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Toggle simulated Voice CX Call
+    function toggleCallState() {
+      isCallActive = !isCallActive;
+      const btn = document.getElementById('call-toggle-btn');
+      const btnText = document.getElementById('call-btn-text');
+      const subText = document.getElementById('call-subtext');
+      const heading = document.getElementById('assistant-heading');
+      const instruction = document.getElementById('assistant-instruction');
+      const sparkIcon = document.getElementById('spark-icon');
+      const soundwaves = document.getElementById('soundwave-container');
+      const pulseBg = document.getElementById('pulse-bg');
+
+      if (isCallActive) {
+        btn.classList.remove('bg-[#4a2d30]', 'hover:bg-[#382124]');
+        btn.classList.add('bg-[#b85b4b]', 'hover:bg-[#9e4a3c]');
+        btnText.textContent = "End Call with Aria";
+        subText.textContent = "Live voice session active • Speak naturally";
+
+        pulseBg.classList.add('pulse-ring', 'bg-[#faecea]', 'border-[#d89a9e]');
+        sparkIcon.classList.add('hidden');
+        soundwaves.classList.remove('hidden');
+        soundwaves.classList.add('flex');
+
+        heading.textContent = "Aria is listening...";
+        instruction.textContent = "Speak into your microphone. Aria can advise on undertones, product formulas, or look up your order status in real time.";
+      } else {
+        btn.classList.remove('bg-[#b85b4b]', 'hover:bg-[#9e4a3c]');
+        btn.classList.add('bg-[#4a2d30]', 'hover:bg-[#382124]');
+        btnText.textContent = "Start Call with Aria";
+        subText.textContent = "Microphone access requested on start • Hands-free voice consultation";
+
+        pulseBg.classList.remove('pulse-ring', 'bg-[#faecea]', 'border-[#d89a9e]');
+        sparkIcon.classList.remove('hidden');
+        soundwaves.classList.add('hidden');
+        soundwaves.classList.remove('flex');
+
+        heading.textContent = "Ready when you are";
+        instruction.textContent = "Click \"Start Call with Aria\" and allow microphone access to talk directly with your dedicated beauty & skincare concierge.";
+      }
+    }
+
+    // Interactive suggestion handler
+    function handleSuggestion(queryText) {
+      if (!isCallActive) {
+        toggleCallState();
+      }
+      const instruction = document.getElementById('assistant-instruction');
+      const heading = document.getElementById('assistant-heading');
+      heading.textContent = "Aria is analyzing...";
+      instruction.innerHTML = `Addressing: <span class="font-medium text-[#4a2d30]">"${queryText}"</span> — "For warm golden undertones, our Ace of Face Foundation in shade 20 Galão or 17 Raf creates seamless radiance without ashy flashback..."`;
+    }
+  </script>
+
+
+
+<aside id="aria-floating-widget" style="position: fixed !important; bottom: 28px !important; right: 28px !important; z-index: 9999 !important; pointer-events: auto !important;" class=""><div class="relative group cursor-pointer" onclick="navigateToView('aria')"><div class="flex items-center gap-2.5"><div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#ffffff]/95 backdrop-blur-md border border-[#d89a9e]/60 shadow-md text-xs font-medium text-[#4a2d30] tracking-wide transition-all group-hover:scale-105 group-hover:border-[#d89a9e]"><span class="w-1.5 h-1.5 rounded-full bg-[#d89a9e] animate-ping"></span><svg class="w-3.5 h-3.5 text-[#9a4b52]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg><span class="font-medium">Ask Aria</span></div><button type="button" aria-label="Open Aria Voice CX Concierge" class="aria-orb-pulse relative w-16 h-16 rounded-full bg-[#fcf9f4] border-2 border-[#d89a9e] p-1 flex items-center justify-center hover:scale-105 active:scale-95 hover:shadow-[0_0_25px_rgba(216,154,158,0.7)] transition-all duration-300 focus:outline-none cursor-pointer"><img src="https://lh3.googleusercontent.com/aida/AEtjO1VwblownPp2cx0jvooT8742aRV4nJyJ6o1GksS3Ua095WcuQt8aYGeopoGRr75rfNDGy3MjzBY3PPavrnX8O6jhnJ4j2ZGtAMlsNA3C1aWgks6cPbzzPa-6PBtuikFj21Rq0oy5pQaAkPOmGMsxQj2uFIpt-kdwRmLZlYZJ4jNX0AgrIk3FfcOIkWn5Ic5pdDaECS32PPMo7q7hC2d9CCN7VqUPmE2xYxAoE0kep_iFzm9YqaY1UITSJZTb" alt="Aria AI Voice Assistant" class="w-full h-full object-cover rounded-full"><span class="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#fcf9f4] rounded-full"></span></button></div></div></aside></body></html>

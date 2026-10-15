@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #4a2d30;
+  --primary-hover: #3d2427;
+  --rose-gold: #d89a9e;
+  --rose-accent: #e8a598;
+  --surface: #fcf9f4;
+  --surface-card: #ffffff;
+  --text-muted: #796e65;
+}
+
+body {
+  font-family: var(--font-outfit), 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--surface);
+  color: var(--primary);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.font-serif-luxury {
+  font-family: var(--font-newsreader), 'Newsreader', Georgia, serif;
+}
+
+/* View Transitions */
+.view-container {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.view-hidden {
+  display: none !important;
+  opacity: 0;
+  transform: scale(0.985);
+}
+.view-active {
+  display: block !important;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Floating Aria Bot Orb */
+.aria-orb-pulse {
+  box-shadow: 0 10px 30px rgba(131, 80, 84, 0.28), 0 0 25px rgba(216, 154, 158, 0.45);
+  animation: floatBreath 3.5s ease-in-out infinite;
+}
+@keyframes floatBreath {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-7px) scale(1.025);
+  }
+}
+
+/* Voice visualizer pulsing in Aria screen */
+.pulse-ring {
+  animation: ripple 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+@keyframes ripple {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+/* Active call wave bars */
+.wave-bar {
+  animation: wave 1.2s ease-in-out infinite;
+}
+@keyframes wave {
+  0%, 100% {
+    height: 12px;
+  }
+  50% {
+    height: 38px;
+  }
+}
+
+/* Custom scrollbar for sleek luxury cards */
+.luxury-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.luxury-scrollbar::-webkit-scrollbar-track {
+  background: rgba(235, 220, 211, 0.3);
+  border-radius: 9999px;
+}
+.luxury-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(216, 154, 158, 0.5);
+  border-radius: 9999px;
+}
+.luxury-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(131, 80, 84, 0.6);
+}
+
