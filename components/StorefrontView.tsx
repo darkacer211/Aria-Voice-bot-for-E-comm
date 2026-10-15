@@ -239,11 +239,11 @@ export const StorefrontView: React.FC<Props> = ({
               src="/images/festive-banner.jpg"
               alt="Aria Festive Collection"
               fill
-              className="object-cover opacity-90 mix-blend-multiply"
+              className="object-cover object-right md:object-center"
               priority
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#fcf9f4]/95 via-[#fcf9f4]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#fcf9f4] via-[#fcf9f4]/75 to-transparent" />
 
           {/* Content Overlay */}
           <div className="relative z-10 p-8 md:p-14 max-w-xl">
