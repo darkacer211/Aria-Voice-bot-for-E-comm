@@ -86,8 +86,12 @@ function buildFallbackSummary(body: SummaryRequestBody): PostCallSummary {
 
   // Check tool calls
   const orderTool = (body.toolCalls || []).find((t) => t.toolName === "get_order_details");
-  if (orderTool?.result?.canonical_id) {
-    orderId = orderTool.result.canonical_id;
+  const orderResult = orderTool?.result as
+    | { canonical_id?: string; policy?: { can_cancel?: boolean; return_window_open?: boolean } }
+    | undefined;
+
+  if (orderResult?.canonical_id) {
+    orderId = orderResult.canonical_id;
     intent = "ORDER_TRACKING";
   }
 
@@ -97,10 +101,10 @@ function buildFallbackSummary(body: SummaryRequestBody): PostCallSummary {
 
   if (allText.includes("cancel")) {
     intent = "CANCELLATION_REQUEST";
-    resolution = orderTool?.result?.policy?.can_cancel ? "RESOLVED" : "OUT_OF_POLICY";
+    resolution = orderResult?.policy?.can_cancel ? "RESOLVED" : "OUT_OF_POLICY";
   } else if (allText.includes("return") || allText.includes("refund")) {
     intent = "RETURN_REFUND_REQUEST";
-    resolution = orderTool?.result?.policy?.return_window_open ? "RESOLVED" : "OUT_OF_POLICY";
+    resolution = orderResult?.policy?.return_window_open ? "RESOLVED" : "OUT_OF_POLICY";
   } else if (allText.includes("shipping") || allText.includes("delivery fee")) {
     intent = "SHIPPING_QUERY";
   } else if (allText.includes("cod") || allText.includes("cash on delivery")) {
@@ -199,7 +203,7 @@ INSTRUCTIONS:
       contents: prompt,
       config: {
         responseMimeType: "application/json",
-        responseSchema: summaryResponseSchema as any,
+        responseSchema: summaryResponseSchema as unknown as Record<string, unknown>,
         temperature: 0.1,
       },
     });

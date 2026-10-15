@@ -1,5 +1,3 @@
-import { OrderLookupResult } from "../orders/types";
-
 export type LiveSessionState =
   | "idle"
   | "connecting"
@@ -21,7 +19,7 @@ export interface LiveToolCallRecord {
   id: string;
   toolName: string;
   args: Record<string, unknown>;
-  result: OrderLookupResult;
+  result: Record<string, unknown>;
   latencyMs: number;
   timestamp: string;
 }

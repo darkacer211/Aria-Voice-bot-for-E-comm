@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "scratch/**",
+    "stitch_sugar_cosmetics_landing_page/**",
   ]),
 ]);
 

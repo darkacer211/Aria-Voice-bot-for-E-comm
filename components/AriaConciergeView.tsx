@@ -12,8 +12,6 @@ import {
   Cpu,
   Keyboard,
   ShieldCheck,
-  AlertCircle,
-  Volume2,
   Sliders,
   Check,
   Copy,
@@ -58,7 +56,6 @@ export const AriaConciergeView: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"transcript" | "orders" | "tools" | "settings">("transcript");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [copiedPhrase, setCopiedPhrase] = useState<string | null>(null);
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
 
   const isCallActive =
@@ -85,15 +82,10 @@ export const AriaConciergeView: React.FC<Props> = ({
     }
   }, [initialPrompt, liveState, onStartCall, onSendTextMessage, onClearInitialPrompt]);
 
-  const handleCopy = (text: string, type: "id" | "phrase") => {
+  const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    if (type === "id") {
-      setCopiedId(text);
-      setTimeout(() => setCopiedId(null), 1500);
-    } else {
-      setCopiedPhrase(text);
-      setTimeout(() => setCopiedPhrase(null), 1500);
-    }
+    setCopiedId(text);
+    setTimeout(() => setCopiedId(null), 1500);
   };
 
   const handleSuggestionClick = async (queryText: string) => {
@@ -365,7 +357,7 @@ export const AriaConciergeView: React.FC<Props> = ({
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-mono text-xs font-bold text-[#4a2d30]">ORD-101</span>
                   <button
-                    onClick={() => handleCopy("ORD-101", "id")}
+                    onClick={() => handleCopy("ORD-101")}
                     className="p-1 rounded hover:bg-[#ebdcd3] text-[#796e65] transition cursor-pointer"
                     title="Copy Order ID"
                   >
@@ -410,7 +402,7 @@ export const AriaConciergeView: React.FC<Props> = ({
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-mono text-xs font-bold text-[#4a2d30]">ORD-102</span>
                   <button
-                    onClick={() => handleCopy("ORD-102", "id")}
+                    onClick={() => handleCopy("ORD-102")}
                     className="p-1 rounded hover:bg-[#ebdcd3] text-[#796e65] transition cursor-pointer"
                     title="Copy Order ID"
                   >
@@ -455,7 +447,7 @@ export const AriaConciergeView: React.FC<Props> = ({
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-mono text-xs font-bold text-[#4a2d30]">ORD-103</span>
                   <button
-                    onClick={() => handleCopy("ORD-103", "id")}
+                    onClick={() => handleCopy("ORD-103")}
                     className="p-1 rounded hover:bg-[#ebdcd3] text-[#796e65] transition cursor-pointer"
                     title="Copy Order ID"
                   >
@@ -651,7 +643,7 @@ export const AriaConciergeView: React.FC<Props> = ({
                             {order.id}
                           </span>
                           <button
-                            onClick={() => handleCopy(order.id, "id")}
+                            onClick={() => handleCopy(order.id)}
                             className="p-1 rounded hover:bg-[#ebdcd3] text-[#796e65] transition cursor-pointer"
                             title="Copy Order ID"
                           >

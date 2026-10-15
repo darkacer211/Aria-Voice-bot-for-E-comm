@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Copy, Check, Package, Sparkles, AlertCircle } from "lucide-react";
-import { MOCK_ORDERS_DB } from "@/lib/orders/db";
+import { Copy, Check, Package, Sparkles } from "lucide-react";
 
 interface Props {
   onSelectPhrase?: (phrase: string) => void;

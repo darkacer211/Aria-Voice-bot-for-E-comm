@@ -11,10 +11,44 @@ import {
   LiveToolCallRecord,
   TranscriptTurn,
 } from "./types";
-import { OrderLookupResult } from "../orders/types";
+
+interface LiveClientSession {
+  sendRealtimeInput: (params: { media: { mimeType: string; data: string } }) => void;
+  sendClientContent: (params: { turns: Array<{ role: string; parts: Array<{ text: string }> }>; turnComplete: boolean }) => void;
+  sendToolResponse: (params: { functionResponses: Array<{ id: string; name: string; response: Record<string, unknown> }> }) => void;
+  close: () => void;
+}
+
+interface IncomingLiveFunctionCall {
+  id?: string;
+  name: string;
+  args?: Record<string, unknown>;
+}
+
+interface IncomingLiveMessage {
+  toolCall?: {
+    functionCalls?: IncomingLiveFunctionCall[];
+  };
+  serverContent?: {
+    interrupted?: boolean;
+    inputTranscription?: { text?: string };
+    outputTranscription?: { text?: string };
+    modelTurn?: {
+      parts?: Array<{
+        text?: string;
+        thought?: boolean;
+        inlineData?: {
+          mimeType?: string;
+          data?: string;
+        };
+      }>;
+    };
+    turnComplete?: boolean;
+  };
+}
 
 export class GeminiLiveClient {
-  private session: any = null; // Session from @google/genai
+  private session: LiveClientSession | null = null;
   private state: LiveSessionState = "idle";
   private callbacks: GeminiLiveClientCallbacks;
   private currentTurnId: string = "";
@@ -52,7 +86,7 @@ export class GeminiLiveClient {
       });
 
       // Construct live connect configuration
-      const config: any = {
+      const config: Record<string, unknown> = {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
           voiceConfig: {
@@ -84,28 +118,31 @@ export class GeminiLiveClient {
         },
       };
 
-      this.session = await ai.live.connect({
+      const connectedSession = await ai.live.connect({
         model: CONFIG.LIVE_MODEL,
-        config,
+        config: config as unknown as Parameters<typeof ai.live.connect>[0]["config"],
         callbacks: {
           onopen: () => {
             console.log("[GeminiLiveClient] WebSocket opened");
           },
-          onmessage: async (message: any) => {
-            await this.handleIncomingMessage(message);
+          onmessage: async (message: unknown) => {
+            await this.handleIncomingMessage(message as IncomingLiveMessage);
           },
-          onerror: (err: any) => {
+          onerror: (err: unknown) => {
             console.error("[GeminiLiveClient] Error:", err);
             this.setState("error");
-            this.callbacks.onError(new Error(err?.message || "Live API error"));
+            const message = err instanceof Error ? err.message : (err as { message?: string })?.message || "Live API error";
+            this.callbacks.onError(new Error(message));
           },
-          onclose: (event: any) => {
-            console.log("[GeminiLiveClient] Closed:", event?.reason || event);
+          onclose: (event: unknown) => {
+            const reason = (event as { reason?: string })?.reason;
+            console.log("[GeminiLiveClient] Closed:", reason || event);
             this.setState("idle");
-            this.callbacks.onClose(event?.reason);
+            this.callbacks.onClose(reason);
           },
         },
       });
+      this.session = connectedSession as unknown as LiveClientSession;
 
       this.setState("listening");
 
@@ -140,21 +177,21 @@ export class GeminiLiveClient {
   /**
    * Handle incoming WebSocket message frames from Gemini.
    */
-  private async handleIncomingMessage(message: any) {
+  private async handleIncomingMessage(message: IncomingLiveMessage) {
     try {
       // 1. Tool Call Execution
       if (message.toolCall?.functionCalls) {
         this.setState("thinking");
-        const functionResponses: any[] = [];
+        const functionResponses: Array<{ id: string; name: string; response: Record<string, unknown> }> = [];
 
         for (const fc of message.toolCall.functionCalls) {
           const startTime = Date.now();
           console.log(`[GeminiLiveClient] Executing tool ${fc.name} with args:`, fc.args);
 
-          let result: any;
+          let result: Record<string, unknown>;
           try {
             if (fc.name === "get_product_details") {
-              const query = fc.args?.product_name || fc.args?.query || fc.args?.name || "";
+              const query = String(fc.args?.product_name || fc.args?.query || fc.args?.name || "");
               const resp = await fetch("/api/tools/get_product_details", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -163,7 +200,7 @@ export class GeminiLiveClient {
               result = await resp.json();
             } else {
               // Default to get_order_details
-              const orderId = fc.args?.order_id || fc.args?.orderId || fc.args?.id || "";
+              const orderId = String(fc.args?.order_id || fc.args?.orderId || fc.args?.id || "");
               const resp = await fetch("/api/tools/get_order_details", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

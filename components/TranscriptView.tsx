@@ -26,6 +26,11 @@ export const TranscriptView: React.FC<Props> = ({ turns, liveStatus }) => {
           <h2 className="text-sm font-semibold tracking-wide uppercase text-slate-300">
             Live Call Transcript
           </h2>
+          {liveStatus && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 uppercase font-mono tracking-wider">
+              {liveStatus}
+            </span>
+          )}
         </div>
         <span className="text-xs text-slate-500 font-mono">
           {turns.length} turn{turns.length === 1 ? "" : "s"}

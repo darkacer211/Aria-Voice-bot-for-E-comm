@@ -39,7 +39,9 @@ export class AudioRecorder {
 
       // 2. Initialize AudioContext with 16kHz target sample rate
       // Modern browsers natively perform anti-aliased sinc downsampling in C++
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       try {
         this.audioContext = new AudioCtx({ sampleRate: CONFIG.AUDIO.INPUT_SAMPLE_RATE });
       } catch {

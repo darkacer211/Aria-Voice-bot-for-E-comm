@@ -32,5 +32,5 @@ export interface PostCallSummary {
 
 export interface SummaryRequestBody {
   transcript: Array<{ role: "user" | "model"; text: string; timestamp?: string }>;
-  toolCalls?: Array<{ toolName: string; args: Record<string, unknown>; result: any }>;
+  toolCalls?: Array<{ toolName: string; args: Record<string, unknown>; result: unknown }>;
 }

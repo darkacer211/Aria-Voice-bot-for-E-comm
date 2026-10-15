@@ -12,7 +12,7 @@ export class AudioPlayer {
   private activeSources: Set<AudioBufferSourceNode> = new Set();
   private callbacks: AudioPlayerCallbacks;
   private isPrewarmed: boolean = false;
-  private completeTimeout: any = null;
+  private completeTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(callbacks: AudioPlayerCallbacks = {}) {
     this.callbacks = callbacks;
@@ -24,7 +24,9 @@ export class AudioPlayer {
    */
   public async prewarm(): Promise<void> {
     if (!this.audioContext) {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.audioContext = new AudioCtx({
         sampleRate: CONFIG.AUDIO.OUTPUT_SAMPLE_RATE, // 24,000 Hz
       });
@@ -43,7 +45,9 @@ export class AudioPlayer {
     if (!base64Pcm) return;
 
     if (!this.audioContext) {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.audioContext = new AudioCtx({
         sampleRate: CONFIG.AUDIO.OUTPUT_SAMPLE_RATE,
       });
@@ -120,7 +124,7 @@ export class AudioPlayer {
         source.onended = null;
         source.stop(0);
         source.disconnect();
-      } catch (e) {
+      } catch {
         // Source may already have completed
       }
     }

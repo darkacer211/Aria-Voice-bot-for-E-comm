@@ -9,6 +9,9 @@
     "lint": "eslint",
     "test": "vitest run"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@google/genai": "^2.29.1",
     "lucide-react": "^1.57.0",

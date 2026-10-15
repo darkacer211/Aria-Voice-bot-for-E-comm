@@ -8,7 +8,6 @@ import {
   Heart,
   ShoppingBag,
   Sparkles,
-  ArrowRight,
   Star,
   Check,
   ChevronRight,
