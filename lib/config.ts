@@ -6,7 +6,7 @@
 
 export const CONFIG = {
   // Brand & Persona
-  BRAND_NAME: "Aura Skincare",
+  BRAND_NAME: "Aria",
   AGENT_NAME: "Aria",
 
   // Gemini Live Model Configuration

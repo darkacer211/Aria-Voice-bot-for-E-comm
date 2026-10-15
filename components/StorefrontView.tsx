@@ -135,7 +135,7 @@ export const StorefrontView: React.FC<Props> = ({
               className="cursor-pointer text-left focus:outline-none"
             >
               <span className="font-serif-luxury text-2xl md:text-3xl tracking-widest text-[#4a2d30] font-normal uppercase">
-                Aura Skincare
+                Aria
               </span>
             </button>
           </div>
@@ -156,7 +156,7 @@ export const StorefrontView: React.FC<Props> = ({
               <button
                 onClick={() => {
                   if (searchQuery.trim()) {
-                    showToast(`Searching Aura catalog for "${searchQuery}"...`);
+                    showToast(`Searching Aria catalog for "${searchQuery}"...`);
                   }
                 }}
                 className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-[#4a2d30] text-[#ffffff] text-xs font-medium rounded-full hover:bg-[#3d2427] transition cursor-pointer"
@@ -169,7 +169,7 @@ export const StorefrontView: React.FC<Props> = ({
           {/* Utility Nav Items */}
           <div className="flex items-center gap-6 text-sm text-[#4a2d30]">
             <button
-              onClick={() => showToast("Viewing 24 Luxury Aura Boutiques across India")}
+              onClick={() => showToast("Viewing 24 Luxury Aria Boutiques across India")}
               className="hidden md:flex items-center gap-1.5 hover:text-[#d89a9e] transition cursor-pointer text-xs"
             >
               <Store className="w-4 h-4 text-[#796e65]" />
@@ -247,7 +247,7 @@ export const StorefrontView: React.FC<Props> = ({
           <div className="absolute inset-0 w-full h-full">
             <Image
               src="/images/festive-banner.jpg"
-              alt="Aura Festive Collection"
+              alt="Aria Festive Collection"
               fill
               className="object-cover opacity-90 mix-blend-multiply"
               priority
@@ -469,7 +469,7 @@ export const StorefrontView: React.FC<Props> = ({
           <div className="relative rounded-2xl overflow-hidden bg-[#f7efe9] aspect-square flex items-center justify-center p-6">
             <Image
               src="/images/product-glide-lipstick.jpg"
-              alt="Aura Peptide Formula"
+              alt="Aria Peptide Formula"
               fill
               className="object-contain p-6"
             />
@@ -540,9 +540,9 @@ export const StorefrontView: React.FC<Props> = ({
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#796e65]">
           <div className="flex items-center gap-3">
             <span className="font-serif-luxury text-lg text-[#4a2d30] uppercase tracking-widest">
-              Aura Skincare
+              Aria
             </span>
-            <span>© 2026 Aura Skincare. All rights reserved.</span>
+            <span>© 2026 Aria. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6">
             <button
@@ -552,7 +552,7 @@ export const StorefrontView: React.FC<Props> = ({
               Privacy Policy
             </button>
             <button
-              onClick={() => showToast("Terms of Service: Aura Botanical Luxury Standards")}
+              onClick={() => showToast("Terms of Service: Aria Botanical Luxury Standards")}
               className="hover:text-[#4a2d30] cursor-pointer"
             >
               Terms of Service

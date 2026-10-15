@@ -47,7 +47,7 @@ export const PostCallSummary: React.FC<Props> = ({
 
   const handleDownloadTxt = () => {
     const textLines = [
-      `AURA SKINCARE - CALL TRANSCRIPT`,
+      `ARIA - CALL TRANSCRIPT`,
       `Date: ${new Date().toLocaleString()}`,
       `Agent: Aria (Voice CX Specialist)`,
       `----------------------------------------`,
@@ -61,7 +61,7 @@ export const PostCallSummary: React.FC<Props> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Aura_Skincare_Transcript_${Date.now()}.txt`;
+    a.download = `Aria_Transcript_${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -70,7 +70,7 @@ export const PostCallSummary: React.FC<Props> = ({
     const data = {
       timestamp: new Date().toISOString(),
       agent: "Aria",
-      brand: "Aura Skincare",
+      brand: "Aria",
       summary,
       transcript,
       toolCalls,
@@ -82,7 +82,7 @@ export const PostCallSummary: React.FC<Props> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Aura_Skincare_Call_${Date.now()}.json`;
+    a.download = `Aria_Call_${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -195,7 +195,7 @@ export const PostCallSummary: React.FC<Props> = ({
                 {isFallback && (
                   <div className="p-2.5 rounded-xl bg-[#faecea] border border-[#d89a9e]/50 flex items-center gap-2 text-xs text-[#9a4b52]">
                     <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>Generated via local Aura CX policy analyzer fallback.</span>
+                    <span>Generated via local Aria CX policy analyzer fallback.</span>
                   </div>
                 )}
 

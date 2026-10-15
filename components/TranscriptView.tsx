@@ -79,7 +79,7 @@ export const TranscriptView: React.FC<Props> = ({ turns, liveStatus }) => {
                         isUser ? "text-emerald-400" : "text-amber-400"
                       }`}
                     >
-                      {isUser ? "Customer" : "Aria (Aura Skincare)"}
+                      {isUser ? "Customer" : "Aria"}
                     </span>
                     <span className="text-[10px] text-slate-500 font-mono">
                       {turn.timestamp}

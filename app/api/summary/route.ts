@@ -125,7 +125,7 @@ function buildFallbackSummary(body: SummaryRequestBody): PostCallSummary {
       body.transcript.length > 0
         ? `Customer called regarding ${intent.toLowerCase().replace(/_/g, " ")}. Interaction concluded with status ${resolution}.`
         : "Call ended immediately with no interaction.",
-    policy_applied: orderId ? "Aura Skincare order policy" : null,
+    policy_applied: orderId ? "Aria order policy" : null,
     tools_used: toolsUsed,
     customer_sentiment: "neutral",
     follow_up_needed: followUpNeeded,
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
       .join("\n\n");
 
     const prompt = `
-You are the post-call quality assurance system for Aura Skincare customer calls handled by voice agent Aria.
+You are the post-call quality assurance system for Aria customer calls handled by voice agent Aria.
 Analyze the following completed customer call transcript and tool execution log.
 Produce a strictly validated JSON summary according to the required schema.
 
@@ -192,7 +192,7 @@ INSTRUCTIONS:
 3. resolution_status must reflect the outcome:
    - RESOLVED: Question answered, policy explained, or eligible request confirmed.
    - OUT_OF_POLICY: Customer requested something outside policy (e.g. return after 14 days, cancel shipped order) and was politely denied.
-   - OUT_OF_SCOPE: Inquiries unrelated to Aura Skincare (flights, general trivia).
+   - OUT_OF_SCOPE: Inquiries unrelated to Aria (flights, general trivia).
    - NEEDS_FOLLOW_UP: Unresolved issue or technical failure.
 4. Keep call_summary to 1-3 concise sentences.
 5. Identify customer_sentiment (positive, neutral, negative).

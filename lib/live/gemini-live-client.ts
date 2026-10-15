@@ -154,7 +154,7 @@ export class GeminiLiveClient {
               turns: [
                 {
                   role: "user",
-                  parts: [{ text: "[Customer initiates call. Please greet warm and friendly once as Aria from Aura Skincare]" }],
+                  parts: [{ text: "[Customer initiates call. Please greet warm and friendly once as Aria]" }],
                 },
               ],
               turnComplete: true,

@@ -115,7 +115,7 @@ export const AriaConciergeView: React.FC<Props> = ({
     statusInstruction = "Listening to Aria's voice response. Feel free to speak anytime — barge-in interruption is active.";
   } else if (liveState === "thinking") {
     statusHeading = "Aria is processing...";
-    statusInstruction = "Consulting Aura Skincare brand policies, order database, and catalog actives...";
+    statusInstruction = "Consulting Aria brand policies, order database, and catalog actives...";
   } else if (liveState === "error") {
     statusHeading = "Connection Interrupted";
     statusInstruction = "There was an issue connecting to the Gemini Live session. Please check your network or API key and retry.";
@@ -133,7 +133,7 @@ export const AriaConciergeView: React.FC<Props> = ({
           className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[#796e65] hover:text-[#4a2d30] transition cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Return to Aura Skincare</span>
+          <span>Return to Aria Store</span>
         </button>
 
         <div className="flex items-center gap-4">
@@ -177,7 +177,7 @@ export const AriaConciergeView: React.FC<Props> = ({
 
           {/* Brand Name Beneath Logo */}
           <h1 className="font-serif-luxury text-3xl md:text-4xl text-[#3c2225] font-light tracking-wide mb-1.5">
-            Aura Skincare
+            Aria
           </h1>
 
           {/* Aria Voice CX Specialist Badge & Live State Indicator */}
@@ -775,7 +775,7 @@ export const AriaConciergeView: React.FC<Props> = ({
       <footer className="w-full pt-6 border-t border-[#ebdcd3]/70 text-center">
         <p className="text-xs text-[#8c7f76] flex items-center justify-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-[#9a4b52]" />
-          <span>Private &amp; secure consultation • Aura Skincare</span>
+          <span>Private &amp; secure consultation • Aria</span>
         </p>
       </footer>
     </div>

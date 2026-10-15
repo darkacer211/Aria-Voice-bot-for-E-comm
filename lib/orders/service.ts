@@ -36,7 +36,7 @@ export function computePolicyFlags(
   } else if (returnWindowOpen) {
     returnEligibilityNote = `The 7-day return window is OPEN (delivered ${daysSinceDelivery} day${daysSinceDelivery === 1 ? "" : "s"} ago). Remind the customer that the product must be ${CONFIG.POLICIES.RETURNS.REQUIREMENTS}. You must ask if the product is opened or used before confirming eligibility.`;
   } else {
-    returnEligibilityNote = `The 7-day return window is CLOSED. This order was delivered ${daysSinceDelivery} days ago. Aura Skincare policy strictly permits returns only within 7 days of delivery. Politely deny the return request.`;
+    returnEligibilityNote = `The 7-day return window is CLOSED. This order was delivered ${daysSinceDelivery} days ago. Aria policy strictly permits returns only within 7 days of delivery. Politely deny the return request.`;
   }
 
   // 3. Damaged/Defective Reporting: Within 48 hours (2 days) of delivery, for replacement
