@@ -56,7 +56,33 @@ export const AriaConciergeView: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"transcript" | "orders" | "tools" | "settings">("transcript");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [orders, setOrders] = useState(MOCK_ORDERS_DB);
   const transcriptScrollRef = useRef<HTMLDivElement>(null);
+
+  // Sync orders with toolCalls in real time (e.g. when cancel_order executes)
+  useEffect(() => {
+    const cancelCalls = toolCalls.filter(
+      (tc) => tc.toolName === "cancel_order" && (tc.result as { success?: boolean })?.success
+    );
+    if (cancelCalls.length > 0) {
+      setOrders((prev) => {
+        let changed = false;
+        const next = { ...prev };
+        for (const tc of cancelCalls) {
+          const oid = (tc.result as { order_id?: string })?.order_id;
+          if (oid && next[oid] && next[oid].status !== "Cancelled") {
+            next[oid] = {
+              ...next[oid],
+              status: "Cancelled",
+              estimatedDelivery: "Cancelled by Aria voice assistant",
+            };
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }
+  }, [toolCalls]);
 
   const isCallActive =
     liveState === "listening" || liveState === "speaking" || liveState === "thinking";
@@ -456,17 +482,25 @@ export const AriaConciergeView: React.FC<Props> = ({
                 </div>
                 <div className="text-xs font-medium text-[#4a2d30]">Ananya Patel</div>
                 <div className="text-[11px] text-[#796e65]">Green Tea Face Wash + Toner • ₹850</div>
-                <div className="mt-1 text-[11px] text-emerald-700 font-medium">
-                  Processing • Ordered 3 hrs ago
+                <div className={`mt-1 text-[11px] font-medium ${orders["ORD-103"]?.status === "Cancelled" ? "text-rose-600 font-semibold" : "text-emerald-700"}`}>
+                  {orders["ORD-103"]?.status === "Cancelled" ? "Cancelled by Aria in DB" : "Processing • Ordered 3 hrs ago"}
                 </div>
               </div>
               <div className="mt-2.5 pt-2 border-t border-[#ebdcd3]/70 space-y-1.5">
                 <div className="flex items-center justify-between text-[10px]">
-                  <span className="px-2 py-0.5 rounded-full bg-[#eaf6ef] text-[#20683e] font-medium">
-                    Processing
+                  <span className={`px-2 py-0.5 rounded-full font-medium ${
+                    orders["ORD-103"]?.status === "Cancelled"
+                      ? "bg-rose-100 text-rose-700 font-bold"
+                      : "bg-[#eaf6ef] text-[#20683e]"
+                  }`}>
+                    {orders["ORD-103"]?.status || "Processing"}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#eaf6ef] text-[#20683e] font-medium">
-                    Can Cancel
+                  <span className={`px-2 py-0.5 rounded-full font-medium ${
+                    orders["ORD-103"]?.status === "Cancelled"
+                      ? "bg-slate-100 text-slate-600"
+                      : "bg-[#eaf6ef] text-[#20683e]"
+                  }`}>
+                    {orders["ORD-103"]?.status === "Cancelled" ? "DB Updated" : "Can Cancel"}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1 pt-1">
@@ -474,13 +508,13 @@ export const AriaConciergeView: React.FC<Props> = ({
                     onClick={() => handleSuggestionClick("Can I cancel order ORD-103?")}
                     className="text-[10px] bg-[#ffffff] hover:bg-[#faecea] text-[#4a2d30] px-2 py-1 rounded-lg border border-[#ebdcd3] text-left transition truncate cursor-pointer"
                   >
-                    &quot;Can I cancel order ORD-103?&quot;
+                    &quot;Cancel order ORD-103&quot;
                   </button>
                   <button
-                    onClick={() => handleSuggestionClick("Check order ORD-999")}
+                    onClick={() => handleSuggestionClick("Where is my order ORD-103?")}
                     className="text-[10px] bg-[#ffffff] hover:bg-[#faecea] text-[#4a2d30] px-2 py-1 rounded-lg border border-[#ebdcd3] text-left transition truncate cursor-pointer"
                   >
-                    &quot;Check fake order ORD-999&quot;
+                    &quot;Where is my order ORD-103?&quot;
                   </button>
                 </div>
               </div>
@@ -629,10 +663,10 @@ export const AriaConciergeView: React.FC<Props> = ({
               {/* Order Cards */}
               <div>
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-[#9a4b52] block mb-3">
-                  Mock Orders in Aura Database:
+                  Mock Orders in Aria Database:
                 </span>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {Object.values(MOCK_ORDERS_DB).map((order) => (
+                  {Object.values(orders).map((order) => (
                     <div
                       key={order.id}
                       className="p-3.5 rounded-2xl bg-[#faf7f2] border border-[#ebdcd3] hover:border-[#d89a9e] transition flex flex-col justify-between"
@@ -661,7 +695,13 @@ export const AriaConciergeView: React.FC<Props> = ({
                       </div>
                       <div className="mt-3 pt-2 border-t border-[#ebdcd3]/70 flex items-center justify-between text-[11px]">
                         <span className="font-semibold text-[#4a2d30]">₹{order.totalAmount}</span>
-                        <span className="px-2 py-0.5 rounded-full bg-[#faecea] text-[#9a4b52] font-medium text-[10px]">
+                        <span className={`px-2 py-0.5 rounded-full font-medium text-[10px] ${
+                          order.status === "Cancelled"
+                            ? "bg-rose-100 text-rose-700 font-bold"
+                            : order.status === "Processing"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-[#faecea] text-[#9a4b52]"
+                        }`}>
                           {order.status}
                         </span>
                       </div>

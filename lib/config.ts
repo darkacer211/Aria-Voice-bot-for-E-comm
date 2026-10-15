@@ -1,5 +1,5 @@
 /**
- * Central configuration file for Aura Skincare Voice CX Agent ("Aria").
+ * Central configuration file for Aria Voice CX Agent.
  * Defines confirmed Gemini Live API model strings, voice names, audio specs,
  * and business policy constants.
  */
@@ -46,7 +46,7 @@ export const CONFIG = {
     MAX_USES: 1,
   },
 
-  // Aura Skincare Business Policies (Authoritative Source of Truth)
+  // Aria Business Policies (Authoritative Source of Truth)
   POLICIES: {
     SHIPPING: {
       FREE_SHIPPING_MIN_VALUE: 499, // Strictly ABOVE 499 (i.e. >= 500) qualifies for free shipping

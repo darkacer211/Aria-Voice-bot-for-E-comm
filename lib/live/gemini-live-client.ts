@@ -4,6 +4,7 @@ import {
   SYSTEM_PROMPT,
   GET_ORDER_DETAILS_TOOL_DECLARATION,
   GET_PRODUCT_DETAILS_TOOL_DECLARATION,
+  CANCEL_ORDER_TOOL_DECLARATION,
 } from "../prompt";
 import {
   GeminiLiveClientCallbacks,
@@ -103,6 +104,7 @@ export class GeminiLiveClient {
             functionDeclarations: [
               GET_ORDER_DETAILS_TOOL_DECLARATION,
               GET_PRODUCT_DETAILS_TOOL_DECLARATION,
+              CANCEL_ORDER_TOOL_DECLARATION,
             ],
           },
         ],
@@ -198,6 +200,15 @@ export class GeminiLiveClient {
                 body: JSON.stringify({ query }),
               });
               result = await resp.json();
+            } else if (fc.name === "cancel_order") {
+              const orderId = String(fc.args?.order_id || fc.args?.orderId || fc.args?.id || "");
+              const reason = String(fc.args?.reason || "Customer voice request");
+              const resp = await fetch("/api/tools/cancel_order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId, reason }),
+              });
+              result = await resp.json();
             } else {
               // Default to get_order_details
               const orderId = String(fc.args?.order_id || fc.args?.orderId || fc.args?.id || "");
@@ -234,8 +245,8 @@ export class GeminiLiveClient {
             id: fc.id || `call_${Date.now()}`,
             name: fc.name,
             response: {
+              result,
               output: result,
-              ...result,
             },
           });
         }

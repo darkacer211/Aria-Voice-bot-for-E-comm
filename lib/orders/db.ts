@@ -1,24 +1,12 @@
 import { MockOrder } from "./types";
 
 /**
- * Mock Order Database for Aura Skincare.
- * Provides canonical test orders and demo scenario orders.
+ * Authoritative Mock Order Database for Aria.
+ * Strictly contains the 3 canonical evaluation test orders.
  */
 export const MOCK_ORDERS_DB: Record<string, MockOrder> = {
-  // Classic test orders
   "ORD-101": {
     id: "ORD-101",
-    customerName: "Priya Sharma",
-    items: ["Vitamin C Serum (30ml)"],
-    totalAmount: 699,
-    status: "Out for Delivery",
-    carrier: "BlueDart",
-    trackingNumber: "BD-982103",
-    estimatedDelivery: "Expected by 6 PM today",
-    deliveredDaysAgo: undefined,
-  },
-  "AUR-101": {
-    id: "AUR-101",
     customerName: "Priya Sharma",
     items: ["Vitamin C Serum (30ml)"],
     totalAmount: 699,
@@ -39,17 +27,6 @@ export const MOCK_ORDERS_DB: Record<string, MockOrder> = {
     estimatedDelivery: "Delivered 14 days ago",
     deliveredDaysAgo: 14,
   },
-  "AUR-102": {
-    id: "AUR-102",
-    customerName: "Rahul Verma",
-    items: ["Hydrating Sunscreen SPF 50"],
-    totalAmount: 499,
-    status: "Delivered",
-    carrier: "Delhivery",
-    trackingNumber: "DL-441029",
-    estimatedDelivery: "Delivered 14 days ago",
-    deliveredDaysAgo: 14,
-  },
   "ORD-103": {
     id: "ORD-103",
     customerName: "Ananya Patel",
@@ -60,104 +37,6 @@ export const MOCK_ORDERS_DB: Record<string, MockOrder> = {
     deliveredDaysAgo: undefined,
     orderedHoursAgo: 3,
   },
-  "AUR-103": {
-    id: "AUR-103",
-    customerName: "Ananya Patel",
-    items: ["Green Tea Face Wash + Toner"],
-    totalAmount: 850,
-    status: "Processing",
-    estimatedDelivery: "Ordered 3 hours ago",
-    deliveredDaysAgo: undefined,
-    orderedHoursAgo: 3,
-  },
-
-  // Scenario & Storefront demo orders
-  "ORD-89211": {
-    id: "ORD-89211",
-    customerName: "Priya Sharma",
-    items: ["Glide Peptide Serum Lipstick", "Botanical Silk Elixir"],
-    totalAmount: 2911,
-    status: "Out for Delivery",
-    carrier: "BlueDart",
-    trackingNumber: "BD-771920",
-    estimatedDelivery: "Out for delivery with courier, expected by 5 PM today",
-    deliveredDaysAgo: undefined,
-  },
-  "AUR-89211": {
-    id: "AUR-89211",
-    customerName: "Priya Sharma",
-    items: ["Glide Peptide Serum Lipstick", "Botanical Silk Elixir"],
-    totalAmount: 2911,
-    status: "Out for Delivery",
-    carrier: "BlueDart",
-    trackingNumber: "BD-771920",
-    estimatedDelivery: "Out for delivery with courier, expected by 5 PM today",
-    deliveredDaysAgo: undefined,
-  },
-  "ORD-89212": {
-    id: "ORD-89212",
-    customerName: "Ananya Roy",
-    items: ["Ace of Face Foundation (Shade 20 Galão)", "Plumping Gloss Stick"],
-    totalAmount: 1493,
-    status: "Shipped",
-    carrier: "Delhivery",
-    trackingNumber: "DL-882190",
-    estimatedDelivery: "In transit, arriving in 2 days",
-    deliveredDaysAgo: undefined,
-  },
-  "AUR-89212": {
-    id: "AUR-89212",
-    customerName: "Ananya Roy",
-    items: ["Ace of Face Foundation (Shade 20 Galão)", "Plumping Gloss Stick"],
-    totalAmount: 1493,
-    status: "Shipped",
-    carrier: "Delhivery",
-    trackingNumber: "DL-882190",
-    estimatedDelivery: "In transit, arriving in 2 days",
-    deliveredDaysAgo: undefined,
-  },
-  "ORD-89213": {
-    id: "ORD-89213",
-    customerName: "Sunita Mehra",
-    items: ["Bling Leader Illuminating Strobe", "Rose Hydrating Mist"],
-    totalAmount: 998,
-    status: "Delivered",
-    carrier: "BlueDart",
-    trackingNumber: "BD-661203",
-    estimatedDelivery: "Delivered 3 days ago",
-    deliveredDaysAgo: 3,
-  },
-  "AUR-89213": {
-    id: "AUR-89213",
-    customerName: "Sunita Mehra",
-    items: ["Bling Leader Illuminating Strobe", "Rose Hydrating Mist"],
-    totalAmount: 998,
-    status: "Delivered",
-    carrier: "BlueDart",
-    trackingNumber: "BD-661203",
-    estimatedDelivery: "Delivered 3 days ago",
-    deliveredDaysAgo: 3,
-  },
-  "ORD-89214": {
-    id: "ORD-89214",
-    customerName: "Meera Kapoor",
-    items: ["Partner In Shine Lip Gloss", "Gentle Face Wash"],
-    totalAmount: 749,
-    status: "Processing",
-    estimatedDelivery: "Ordered 1 hour ago",
-    deliveredDaysAgo: undefined,
-    orderedHoursAgo: 1,
-  },
-  "AUR-89214": {
-    id: "AUR-89214",
-    customerName: "Meera Kapoor",
-    items: ["Partner In Shine Lip Gloss", "Gentle Face Wash"],
-    totalAmount: 749,
-    status: "Processing",
-    estimatedDelivery: "Ordered 1 hour ago",
-    deliveredDaysAgo: undefined,
-    orderedHoursAgo: 1,
-  },
 };
 
 /**
@@ -166,3 +45,42 @@ export const MOCK_ORDERS_DB: Record<string, MockOrder> = {
 export function getAllMockOrders(): MockOrder[] {
   return Object.values(MOCK_ORDERS_DB);
 }
+
+/**
+ * Reset mock database to canonical pristine state (used by test suites and resets).
+ */
+export function resetMockDb(): void {
+  MOCK_ORDERS_DB["ORD-101"] = {
+    id: "ORD-101",
+    customerName: "Priya Sharma",
+    items: ["Vitamin C Serum (30ml)"],
+    totalAmount: 699,
+    status: "Out for Delivery",
+    carrier: "BlueDart",
+    trackingNumber: "BD-982103",
+    estimatedDelivery: "Expected by 6 PM today",
+    deliveredDaysAgo: undefined,
+  };
+  MOCK_ORDERS_DB["ORD-102"] = {
+    id: "ORD-102",
+    customerName: "Rahul Verma",
+    items: ["Hydrating Sunscreen SPF 50"],
+    totalAmount: 499,
+    status: "Delivered",
+    carrier: "Delhivery",
+    trackingNumber: "DL-441029",
+    estimatedDelivery: "Delivered 14 days ago",
+    deliveredDaysAgo: 14,
+  };
+  MOCK_ORDERS_DB["ORD-103"] = {
+    id: "ORD-103",
+    customerName: "Ananya Patel",
+    items: ["Green Tea Face Wash + Toner"],
+    totalAmount: 850,
+    status: "Processing",
+    estimatedDelivery: "Ordered 3 hours ago",
+    deliveredDaysAgo: undefined,
+    orderedHoursAgo: 3,
+  };
+}
+

@@ -1,5 +1,5 @@
 /**
- * Authoritative Product Catalog & Dataset for Aura Skincare.
+ * Authoritative Product Catalog & Dataset for Aria.
  * Real-time product specifications, shade matrices, bio-actives, and pricing.
  */
 

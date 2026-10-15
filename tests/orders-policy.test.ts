@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { getOrderDetails, computePolicyFlags } from "@/lib/orders/service";
+import { describe, it, expect, afterEach } from "vitest";
+import { getOrderDetails, computePolicyFlags, cancelOrder } from "@/lib/orders/service";
+import { resetMockDb } from "@/lib/orders/db";
 
 describe("Order Lookup and Policy Calculation Service", () => {
   it("correctly looks up and computes policy for ORD-101 (Out for Delivery)", () => {
@@ -89,4 +90,42 @@ describe("Order Lookup and Policy Calculation Service", () => {
     const policy2501 = computePolicyFlags(2501, "Processing");
     expect(policy2501.cod_eligible).toBe(false);
   });
+
+  describe("cancelOrder tool service", () => {
+    afterEach(() => {
+      resetMockDb();
+    });
+
+    it("successfully cancels ORD-103 (Processing status) and updates database", () => {
+      const res = cancelOrder("ORD-103", "Customer voice cancellation");
+      expect(res.success).toBe(true);
+      expect(res.new_status).toBe("Cancelled");
+
+      // Verify database updated
+      const lookup = getOrderDetails("ORD-103");
+      expect(lookup.found).toBe(true);
+      if (!lookup.found) return;
+      expect(lookup.order.status).toBe("Cancelled");
+    });
+
+    it("authoritatively rejects cancellation for ORD-101 (Out for Delivery)", () => {
+      const res = cancelOrder("ORD-101");
+      expect(res.success).toBe(false);
+      expect(res.message).toContain("cannot be cancelled");
+      expect(res.message).toContain("Out for Delivery");
+
+      // Verify database unchanged
+      const lookup = getOrderDetails("ORD-101");
+      expect(lookup.found).toBe(true);
+      if (!lookup.found) return;
+      expect(lookup.order.status).toBe("Out for Delivery");
+    });
+
+    it("returns error when trying to cancel unknown order ORD-999", () => {
+      const res = cancelOrder("ORD-999");
+      expect(res.success).toBe(false);
+      expect(res.error).toBe("ORDER_NOT_FOUND");
+    });
+  });
 });
+

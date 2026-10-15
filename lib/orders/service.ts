@@ -114,3 +114,52 @@ export function getOrderDetails(rawOrderId: string | null | undefined): OrderLoo
     policy,
   };
 }
+
+/**
+ * Authoritative cancellation service for the cancel_order tool.
+ * Updates order status in database if policy permits ('Processing' only).
+ */
+export function cancelOrder(rawOrderId: string | null | undefined, reason?: string) {
+  const normResult = normalizeOrderId(rawOrderId);
+  if (!normResult.success) {
+    return {
+      success: false,
+      error: normResult.error,
+      message: normResult.message,
+    };
+  }
+
+  const canonicalId = normResult.canonicalId;
+  const order = MOCK_ORDERS_DB[canonicalId];
+
+  if (!order) {
+    return {
+      success: false,
+      error: "ORDER_NOT_FOUND",
+      message: `No order found matching ${canonicalId} in the Aria database.`,
+    };
+  }
+
+  if (order.status !== CONFIG.POLICIES.CANCELLATIONS.ALLOWED_STATUS) {
+    return {
+      success: false,
+      order_id: canonicalId,
+      current_status: order.status,
+      message: `Order ${canonicalId} cannot be cancelled because its current status is '${order.status}'. ${CONFIG.POLICIES.CANCELLATIONS.NON_CANCELLABLE_NOTE}`,
+    };
+  }
+
+  // Authoritatively cancel order in mock database
+  order.status = "Cancelled";
+  order.estimatedDelivery = "Cancelled by customer request";
+
+  return {
+    success: true,
+    order_id: canonicalId,
+    new_status: "Cancelled",
+    message: `Order ${canonicalId} has been successfully cancelled in the Aria database.`,
+    customer_name: order.customerName,
+    items: order.items,
+    reason: reason || "Customer voice request",
+  };
+}
