@@ -115,16 +115,6 @@ export const StorefrontView: React.FC<Props> = ({
         </div>
       )}
 
-      {/* Top Global Notification Banner */}
-      <div className="bg-[#f3ece4] border-b border-[#e9ded2] text-[#4a2d30] py-2 px-4 text-xs font-medium text-center flex items-center justify-center gap-3">
-        <span className="inline-block w-2 h-2 rounded-full bg-[#d89a9e] animate-ping" />
-        <span>Complimentary Botanical Silk Elixir on all orders over ₹2,499</span>
-        <span className="hidden md:inline text-[#d89a9e] font-semibold">| Code: BOTANICAL</span>
-        <span className="text-[11px] bg-[#ffffff] border border-[#d89a9e]/40 px-2.5 py-0.5 rounded-full ml-2 text-[#796e65]">
-          Interactive Prototype
-        </span>
-      </div>
-
       {/* Navigation Header */}
       <header className="sticky top-0 z-40 bg-[#fcf9f4]/95 backdrop-blur-md border-b border-[#ebdcd3]/70">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
