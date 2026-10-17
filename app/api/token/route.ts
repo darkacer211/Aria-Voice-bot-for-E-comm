@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, Modality } from "@google/genai";
 import { CONFIG } from "@/lib/config";
+import {
+  SYSTEM_PROMPT,
+  GET_ORDER_DETAILS_TOOL_DECLARATION,
+  GET_PRODUCT_DETAILS_TOOL_DECLARATION,
+  CANCEL_ORDER_TOOL_DECLARATION,
+} from "@/lib/prompt";
 
 // Simple in-memory sliding rate limiter per IP
 const requestHistory = new Map<string, number[]>();
@@ -44,7 +50,10 @@ export async function POST(req: NextRequest) {
       Date.now() + CONFIG.TOKEN.NEW_SESSION_EXPIRATION_MINUTES * 60 * 1000
     ).toISOString();
 
-    // Create locked ephemeral token for Gemini Live WebSocket session
+    // Create locked ephemeral token for Gemini Live WebSocket session.
+    // Locking systemInstruction, tools, speechConfig, and low temperature into the token constraints
+    // guarantees the Gemini Live gateway strictly enforces database grounding, refusal guardrails,
+    // and tool call bindings on every customer turn.
     const token = await ai.authTokens.create({
       config: {
         uses: CONFIG.TOKEN.MAX_USES,
@@ -54,7 +63,27 @@ export async function POST(req: NextRequest) {
           model: CONFIG.LIVE_MODEL,
           config: {
             responseModalities: [Modality.AUDIO],
-          },
+            temperature: 0.1,
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            tools: [
+              {
+                functionDeclarations: [
+                  GET_ORDER_DETAILS_TOOL_DECLARATION,
+                  GET_PRODUCT_DETAILS_TOOL_DECLARATION,
+                  CANCEL_ORDER_TOOL_DECLARATION,
+                ],
+              },
+            ],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: CONFIG.VOICE_NAME,
+                },
+              },
+            },
+            inputAudioTranscription: {},
+            outputAudioTranscription: {},
+          } as unknown as Record<string, unknown>,
         },
         httpOptions: { apiVersion: "v1alpha" },
       },
