@@ -93,9 +93,7 @@ export class GeminiLiveClient {
       // Construct live connect configuration
       const config: Record<string, unknown> = {
         responseModalities: [Modality.AUDIO],
-        generationConfig: {
-          temperature: 0.1,
-        },
+        temperature: 0.1,
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
