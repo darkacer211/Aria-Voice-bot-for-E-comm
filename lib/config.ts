@@ -15,7 +15,7 @@ export const CONFIG = {
   LIVE_MODEL_FALLBACK: "gemini-2.0-flash",
 
   // Model used strictly for post-call structured JSON summary
-  SUMMARY_MODEL: "gemini-2.5-flash",
+  SUMMARY_MODEL: "gemini-3.5-flash-lite",
 
   // Voice Configuration
   // 'Aoede' offers a breezy, warm, natural tone that suits a friendly Indian-English CX specialist
