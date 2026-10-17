@@ -132,36 +132,6 @@ export class GeminiLiveClient {
         callbacks: {
           onopen: () => {
             console.log("[GeminiLiveClient] WebSocket opened");
-
-            // 1. Dispatch initial proactive greeting trigger cleanly
-            try {
-              this.session?.sendClientContent({
-                turns: [
-                  {
-                    role: "user",
-                    parts: [{ text: "[The customer has connected. Greet them immediately: Hello! Welcome to AURA. I'm Aria, how can I help you today?]" }],
-                  },
-                ],
-                turnComplete: true,
-              });
-            } catch (e) {
-              console.warn("[GeminiLiveClient] Failed to send initial turn:", e);
-            }
-
-            // 2. Enable mic streaming after 350ms grace period so greeting is cleanly initiated
-            setTimeout(() => {
-              this.isMicStreamingEnabled = true;
-            }, 350);
-
-            // 3. Safety Watchdog: If Gemini does not send audio within 1200ms, unlock listening immediately
-            // so Aria NEVER stays silent and customer can speak without being blocked.
-            if (this.initialGreetingTimeout) clearTimeout(this.initialGreetingTimeout);
-            this.initialGreetingTimeout = setTimeout(() => {
-              this.isMicStreamingEnabled = true;
-              if (this.state === "connecting" || this.state === "thinking") {
-                this.setState("listening");
-              }
-            }, 1200);
           },
           onmessage: async (message: unknown) => {
             await this.handleIncomingMessage(message as IncomingLiveMessage);
@@ -182,7 +152,33 @@ export class GeminiLiveClient {
       });
       this.session = connectedSession as unknown as LiveClientSession;
 
-      this.setState("listening");
+      // 1. Proactively dispatch opening turn so Aria speaks her voice greeting first
+      try {
+        this.session.sendClientContent({
+          turns: [
+            {
+              role: "user",
+              parts: [{ text: "[The customer has connected to the call. Please speak your opening greeting aloud right now as Aria: 'Hello! Welcome to AURA. I'm Aria, how can I help you today?']" }],
+            },
+          ],
+          turnComplete: true,
+        });
+        this.setState("thinking");
+      } catch (greetingErr) {
+        console.warn("[GeminiLiveClient] Failed to send initial turn:", greetingErr);
+        this.setState("listening");
+        this.isMicStreamingEnabled = true;
+      }
+
+      // 2. Safety Watchdog: If Gemini does not send audio within 3000ms, unlock listening immediately
+      // so Aria NEVER stays silent and customer can speak without being blocked.
+      if (this.initialGreetingTimeout) clearTimeout(this.initialGreetingTimeout);
+      this.initialGreetingTimeout = setTimeout(() => {
+        this.isMicStreamingEnabled = true;
+        if (this.state === "connecting" || this.state === "thinking") {
+          this.setState("listening");
+        }
+      }, 3000);
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error("Failed to connect to Live session");
       console.error("[GeminiLiveClient] Connection failed:", error);
