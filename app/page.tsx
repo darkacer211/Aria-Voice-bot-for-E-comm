@@ -11,6 +11,7 @@ import { AriaConciergeView } from "@/components/AriaConciergeView";
 import { PostCallSummary } from "@/components/PostCallSummary";
 import { TextTestModal } from "@/components/TextTestModal";
 import { AlertTriangle } from "lucide-react";
+import { CONFIG } from "@/lib/config";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<"storefront" | "aria">("storefront");
@@ -21,7 +22,7 @@ export default function Home() {
   const [toolCalls, setToolCalls] = useState<LiveToolCallRecord[]>([]);
   const [micLevel, setMicLevel] = useState<number>(0);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
-  const [vadSilenceMs, setVadSilenceMs] = useState<number>(700);
+  const [vadSilenceMs, setVadSilenceMs] = useState<number>(CONFIG.VAD.DEFAULT_SILENCE_DURATION_MS);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Summary State
@@ -141,13 +142,25 @@ export default function Home() {
         },
         onTranscriptChunk: (turn) => {
           setTurns((prev) => {
-            // If the last turn has the same role and is within 4 seconds, append text
             const last = prev[prev.length - 1];
             if (last && last.role === turn.role) {
               const updated = [...prev];
+              const incoming = turn.text.trim();
+              let mergedText: string;
+
+              if (incoming.startsWith(last.text)) {
+                // Incoming is cumulative transcript containing previous words
+                mergedText = incoming;
+              } else if (last.text.endsWith(incoming)) {
+                // Already includes this incoming chunk
+                mergedText = last.text;
+              } else {
+                mergedText = `${last.text} ${incoming}`.trim();
+              }
+
               updated[updated.length - 1] = {
                 ...last,
-                text: `${last.text} ${turn.text}`.trim(),
+                text: mergedText,
                 timestamp: turn.timestamp,
               };
               return updated;

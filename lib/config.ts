@@ -34,9 +34,9 @@ export const CONFIG = {
   // Default Gemini Live API silence wait is ~2000ms. Setting this to 500ms + HIGH sensitivity
   // eliminates the conversational lag so Aria responds immediately when the customer stops speaking.
   VAD: {
-    DEFAULT_SILENCE_DURATION_MS: 500, // 500ms for rapid, natural turn-taking without delays
+    DEFAULT_SILENCE_DURATION_MS: 600, // 600ms balanced: snappy turn-taking without mid-sentence false cutoffs
     END_OF_SPEECH_SENSITIVITY: "END_SENSITIVITY_HIGH" as const,
-    PREFIX_PADDING_MS: 20,
+    PREFIX_PADDING_MS: 100, // 100ms prefix padding preserves sentence-initial consonants
   },
 
   // Ephemeral Token Constraints

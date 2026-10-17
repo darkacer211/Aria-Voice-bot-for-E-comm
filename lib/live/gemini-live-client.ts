@@ -54,6 +54,9 @@ export class GeminiLiveClient {
   private callbacks: GeminiLiveClientCallbacks;
   private currentTurnId: string = "";
   private isModelSpeaking: boolean = false;
+  private isExecutingTool: boolean = false;
+  private isMicStreamingEnabled: boolean = false;
+  private initialGreetingTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(callbacks: GeminiLiveClientCallbacks) {
     this.callbacks = callbacks;
@@ -79,6 +82,8 @@ export class GeminiLiveClient {
   ): Promise<void> {
     try {
       this.setState("connecting");
+      this.isExecutingTool = false;
+      this.isMicStreamingEnabled = false;
 
       // Initialize the GenAI client with ephemeral token and v1alpha API version
       const ai = new GoogleGenAI({
@@ -127,6 +132,36 @@ export class GeminiLiveClient {
         callbacks: {
           onopen: () => {
             console.log("[GeminiLiveClient] WebSocket opened");
+
+            // 1. Dispatch initial proactive greeting trigger cleanly
+            try {
+              this.session?.sendClientContent({
+                turns: [
+                  {
+                    role: "user",
+                    parts: [{ text: "[The customer has connected. Greet them immediately: Hello! Welcome to AURA. I'm Aria, how can I help you today?]" }],
+                  },
+                ],
+                turnComplete: true,
+              });
+            } catch (e) {
+              console.warn("[GeminiLiveClient] Failed to send initial turn:", e);
+            }
+
+            // 2. Enable mic streaming after 350ms grace period so greeting is cleanly initiated
+            setTimeout(() => {
+              this.isMicStreamingEnabled = true;
+            }, 350);
+
+            // 3. Safety Watchdog: If Gemini does not send audio within 1200ms, unlock listening immediately
+            // so Aria NEVER stays silent and customer can speak without being blocked.
+            if (this.initialGreetingTimeout) clearTimeout(this.initialGreetingTimeout);
+            this.initialGreetingTimeout = setTimeout(() => {
+              this.isMicStreamingEnabled = true;
+              if (this.state === "connecting" || this.state === "thinking") {
+                this.setState("listening");
+              }
+            }, 1200);
           },
           onmessage: async (message: unknown) => {
             await this.handleIncomingMessage(message as IncomingLiveMessage);
@@ -148,26 +183,6 @@ export class GeminiLiveClient {
       this.session = connectedSession as unknown as LiveClientSession;
 
       this.setState("listening");
-
-      // Send initial trigger so Aria speaks the opening greeting proactively
-      setTimeout(() => {
-        try {
-          if (this.session) {
-            this.session.sendClientContent({
-              turns: [
-                {
-                  role: "user",
-                  parts: [{ text: "[Customer initiates call. Please greet warm and friendly once as Aria]" }],
-                },
-              ],
-              turnComplete: true,
-            });
-            this.setState("thinking");
-          }
-        } catch (e) {
-          console.warn("[GeminiLiveClient] Failed to send initial turn:", e);
-        }
-      }, 300);
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error("Failed to connect to Live session");
       console.error("[GeminiLiveClient] Connection failed:", error);
@@ -184,6 +199,7 @@ export class GeminiLiveClient {
     try {
       // 1. Tool Call Execution
       if (message.toolCall?.functionCalls) {
+        this.isExecutingTool = true;
         this.setState("thinking");
         const functionResponses: Array<{ id: string; name: string; response: Record<string, unknown> }> = [];
 
@@ -259,7 +275,11 @@ export class GeminiLiveClient {
             this.session.sendToolResponse({ functionResponses });
           } catch (toolSendErr) {
             console.error("[GeminiLiveClient] Error in sendToolResponse:", toolSendErr);
+          } finally {
+            this.isExecutingTool = false;
           }
+        } else {
+          this.isExecutingTool = false;
         }
         return;
       }
@@ -287,7 +307,9 @@ export class GeminiLiveClient {
           timestamp: new Date().toLocaleTimeString(),
         };
         this.callbacks.onTranscriptChunk(turn);
-        this.setState("thinking");
+        // CRITICAL: DO NOT set state to "thinking" here!
+        // The customer is actively speaking. State must stay "listening"
+        // so sendAudioChunk continues streaming all subsequent words of the sentence.
       }
 
       // Handle Model Output Transcription
@@ -306,6 +328,11 @@ export class GeminiLiveClient {
       if (content.modelTurn?.parts) {
         for (const part of content.modelTurn.parts) {
           if (part.inlineData?.data) {
+            if (this.initialGreetingTimeout) {
+              clearTimeout(this.initialGreetingTimeout);
+              this.initialGreetingTimeout = null;
+            }
+            this.isMicStreamingEnabled = true;
             this.isModelSpeaking = true;
             this.setState("speaking");
             this.callbacks.onAudioData(part.inlineData.data);
@@ -347,32 +374,26 @@ export class GeminiLiveClient {
 
   /**
    * Stream a raw 16kHz PCM16 audio chunk (base64 string).
-   * Implements strict Acoustic Echo & Thinking Gating to prevent speaker output
-   * or ambient room noise from interrupting Gemini during tool execution and model speech.
+   * Streams audio smoothly without cutting off natural user speech.
    */
   public sendAudioChunk(base64Pcm: string, rms: number = 0): void {
     if (!this.session || this.state === "idle" || this.state === "connecting") return;
+    if (!this.isMicStreamingEnabled) return;
 
-    // 1. TOOL EXECUTION & THINKING GATING:
-    // When Aria is thinking or querying backend tools, NEVER forward mic audio to Gemini.
-    // Otherwise, speaker echo of the bridge phrase ("Sure, let me check that for you")
-    // or room ambient noise will be interpreted by Gemini as user barge-in,
-    // which cancels the tool call turn and causes Gemini to freeze without answering!
-    if (this.state === "thinking") {
+    // 1. TOOL EXECUTION GATING ONLY:
+    // Only pause mic forwarding during the brief moment backend tools are querying,
+    // so ambient mic noise doesn't cancel the tool call turn before sendToolResponse
+    if (this.isExecutingTool) {
       return;
     }
 
-    // 2. ACOUSTIC ECHO GATING & BARGE-IN:
-    // When Aria is actively speaking, drop speaker audio bleed.
-    // Speaker audio reflecting into a laptop mic is typically 0.05 - 0.16 RMS.
-    // A deliberate user barge-in speech is typically >= 0.22 RMS.
+    // 2. SEAMLESS BARGE-IN & AMBIENT BLEED FILTER:
+    // When the model is actively speaking, filter extreme low-level noise (< 0.04 RMS).
+    // If the customer speaks naturally (>= 0.04 RMS), immediately trigger barge-in and send audio!
     if (this.isModelSpeaking) {
-      const BARGE_IN_THRESHOLD = 0.22;
-      if (rms < BARGE_IN_THRESHOLD) {
-        return; // Suppress speaker echo feedback
+      if (rms < 0.04) {
+        return; // filter low-level speaker/ambient bleed
       }
-
-      console.log("[GeminiLiveClient] Intentional user barge-in detected, RMS:", rms);
       this.isModelSpeaking = false;
       this.callbacks.onInterrupted();
       this.setState("listening");
@@ -426,6 +447,13 @@ export class GeminiLiveClient {
    * Disconnect and clean up session.
    */
   public disconnect(): void {
+    if (this.initialGreetingTimeout) {
+      clearTimeout(this.initialGreetingTimeout);
+      this.initialGreetingTimeout = null;
+    }
+    this.isExecutingTool = false;
+    this.isMicStreamingEnabled = false;
+
     try {
       if (this.session) {
         this.session.close();
