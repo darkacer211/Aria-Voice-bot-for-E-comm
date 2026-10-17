@@ -17,7 +17,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Aria | Interactive Storefront & Voice Concierge",
+  title: "AURA | Interactive Storefront & Aria Voice Concierge",
   description:
     "Luxury botanical beauty storefront with Aria, an intelligent real-time voice customer support specialist powered by Gemini Live API.",
 };
