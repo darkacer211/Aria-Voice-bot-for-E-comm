@@ -125,7 +125,7 @@ export const StorefrontView: React.FC<Props> = ({
               className="cursor-pointer text-left focus:outline-none"
             >
               <span className="font-serif-luxury text-2xl md:text-3xl tracking-widest text-[#4a2d30] font-normal uppercase">
-                Aria
+                AURA
               </span>
             </button>
           </div>
@@ -146,7 +146,7 @@ export const StorefrontView: React.FC<Props> = ({
               <button
                 onClick={() => {
                   if (searchQuery.trim()) {
-                    showToast(`Searching Aria catalog for "${searchQuery}"...`);
+                    showToast(`Searching AURA catalog for "${searchQuery}"...`);
                   }
                 }}
                 className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-[#4a2d30] text-[#ffffff] text-xs font-medium rounded-full hover:bg-[#3d2427] transition cursor-pointer"
@@ -159,7 +159,7 @@ export const StorefrontView: React.FC<Props> = ({
           {/* Utility Nav Items */}
           <div className="flex items-center gap-6 text-sm text-[#4a2d30]">
             <button
-              onClick={() => showToast("Viewing 24 Luxury Aria Boutiques across India")}
+              onClick={() => showToast("Viewing 24 Luxury AURA Boutiques across India")}
               className="hidden md:flex items-center gap-1.5 hover:text-[#d89a9e] transition cursor-pointer text-xs"
             >
               <Store className="w-4 h-4 text-[#796e65]" />
@@ -179,7 +179,7 @@ export const StorefrontView: React.FC<Props> = ({
               className="hidden sm:flex items-center gap-2 bg-[#f4ebe6] hover:bg-[#ebdcd3] text-[#4a2d30] px-3.5 py-1.5 rounded-full border border-[#d89a9e]/40 transition text-xs font-medium shadow-sm group cursor-pointer"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Aria AI Voice</span>
+              <span>Talk to Aria</span>
               <span className="text-[10px] bg-[#d89a9e]/30 px-1.5 py-0.5 rounded text-[#4a2d30] font-semibold">
                 Gemini
               </span>
@@ -542,7 +542,7 @@ export const StorefrontView: React.FC<Props> = ({
               Privacy Policy
             </button>
             <button
-              onClick={() => showToast("Terms of Service: Aria Botanical Luxury Standards")}
+              onClick={() => showToast("Terms of Service: AURA Botanical Luxury Standards")}
               className="hover:text-[#4a2d30] cursor-pointer"
             >
               Terms of Service

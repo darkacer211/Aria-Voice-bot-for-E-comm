@@ -47,9 +47,9 @@ export const PostCallSummary: React.FC<Props> = ({
 
   const handleDownloadTxt = () => {
     const textLines = [
-      `ARIA - CALL TRANSCRIPT`,
+      `AURA - CALL TRANSCRIPT`,
       `Date: ${new Date().toLocaleString()}`,
-      `Agent: Aria (Voice CX Specialist)`,
+      `Agent: Aria (AI Voice Assistant for AURA)`,
       `----------------------------------------`,
       ...transcript.map((t) => `[${t.timestamp}] ${t.role.toUpperCase()}: ${t.text}`),
       `----------------------------------------`,
@@ -61,7 +61,7 @@ export const PostCallSummary: React.FC<Props> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Aria_Transcript_${Date.now()}.txt`;
+    a.download = `AURA_Aria_Transcript_${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -70,7 +70,7 @@ export const PostCallSummary: React.FC<Props> = ({
     const data = {
       timestamp: new Date().toISOString(),
       agent: "Aria",
-      brand: "Aria",
+      brand: "AURA",
       summary,
       transcript,
       toolCalls,
@@ -82,7 +82,7 @@ export const PostCallSummary: React.FC<Props> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Aria_Call_${Date.now()}.json`;
+    a.download = `AURA_Aria_Call_${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -264,29 +264,48 @@ export const PostCallSummary: React.FC<Props> = ({
                 </div>
 
                 {/* Prominent Cancellation Status Indicator */}
-                {(summary.customer_intent === "CANCELLATION_REQUEST" ||
-                  toolCalls.some((t) => t.toolName === "cancel_order")) && (
-                  <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 flex items-center justify-between text-xs text-rose-900">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-rose-600 inline-block animate-ping"></span>
-                      <span className="font-bold">Cancellation Status:</span>
-                      <span className="text-rose-800 font-medium">
-                        {summary.order_id ? `Order ${summary.order_id}` : "Customer Order"}
-                      </span>
-                    </div>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
-                        summary.resolution_status === "RESOLVED"
-                          ? "bg-rose-100 text-rose-800 border-rose-300"
-                          : "bg-amber-100 text-amber-900 border-amber-300"
+                {(() => {
+                  const cancelToolCall = toolCalls.find((t) => t.toolName === "cancel_order");
+                  const isCancelledInDb =
+                    (cancelToolCall?.result as { success?: boolean })?.success === true;
+                  const isCancellationRelated =
+                    summary.customer_intent === "CANCELLATION_REQUEST" || Boolean(cancelToolCall);
+
+                  if (!isCancellationRelated) return null;
+
+                  return (
+                    <div
+                      className={`p-3 rounded-2xl border flex items-center justify-between text-xs ${
+                        isCancelledInDb
+                          ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+                          : "bg-amber-50 border-amber-300 text-amber-900"
                       }`}
                     >
-                      {summary.resolution_status === "RESOLVED"
-                        ? "CANCELLED IN DATABASE"
-                        : "NOT CANCELLED (OUT FOR DELIVERY / DELIVERED)"}
-                    </span>
-                  </div>
-                )}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-2 h-2 rounded-full inline-block ${
+                            isCancelledInDb ? "bg-emerald-600" : "bg-amber-600"
+                          }`}
+                        ></span>
+                        <span className="font-bold">Cancellation Status:</span>
+                        <span className="font-medium">
+                          {summary.order_id ? `Order ${summary.order_id}` : "Customer Order"}
+                        </span>
+                      </div>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
+                          isCancelledInDb
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                            : "bg-rose-100 text-rose-800 border-rose-300"
+                        }`}
+                      >
+                        {isCancelledInDb
+                          ? "✓ CANCELLED IN DATABASE"
+                          : "✗ NOT CANCELLED (OUT FOR DELIVERY / DOORSTEP REFUSAL)"}
+                      </span>
+                    </div>
+                  );
+                })()}
 
                 {/* Policy Applied & Tools Used */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">

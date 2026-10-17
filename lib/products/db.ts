@@ -24,6 +24,48 @@ export interface ProductRecord {
 }
 
 export const PRODUCT_CATALOG_DB: Record<string, ProductRecord> = {
+  "vitamin-c-serum": {
+    id: "vitamin-c-serum",
+    name: "Vitamin C Serum (30ml)",
+    category: "Skincare",
+    price: 699,
+    originalPrice: 899,
+    discountNote: "22% off",
+    inStock: true,
+    rating: 4.9,
+    reviewsCount: 1420,
+    keyActives: ["10% Ethyl Ascorbic Acid", "Ferulic Acid", "Triple Hyaluronic Acid"],
+    description:
+      "Brightening antioxidant serum that protects against environmental stressors, boosts collagen, and fades dark spots.",
+  },
+  "hydrating-sunscreen": {
+    id: "hydrating-sunscreen",
+    name: "Hydrating Sunscreen SPF 50",
+    category: "Skincare",
+    price: 499,
+    originalPrice: 499,
+    discountNote: "Best Seller",
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 980,
+    keyActives: ["Ceramide NP", "Niacinamide 2%", "PA++++ Broad Spectrum Filters"],
+    description:
+      "Ultra-lightweight invisible sun shield with zero white cast that protects against UVA/UVB rays while reinforcing the skin barrier.",
+  },
+  "green-tea-face-wash-toner": {
+    id: "green-tea-face-wash-toner",
+    name: "Green Tea Face Wash + Toner",
+    category: "Skincare",
+    price: 850,
+    originalPrice: 999,
+    discountNote: "Combo Value Kit",
+    inStock: true,
+    rating: 4.8,
+    reviewsCount: 650,
+    keyActives: ["Organic Green Tea Extract", "Aloe Vera", "Witch Hazel", "Centella Asiatica"],
+    description:
+      "Purifying antioxidant duo featuring a sulfate-free foaming face wash and a pore-balancing botanical toner.",
+  },
   "ace-of-face": {
     id: "ace-of-face",
     name: "Ace of Face Foundation Stick",
@@ -157,6 +199,15 @@ export function lookupProduct(query: string | null | undefined): ProductRecord |
   }
 
   // Token fuzzy search
+  if (q.includes("vitamin c") || q.includes("serum (30ml)") || (q.includes("serum") && !q.includes("lipstick"))) {
+    return PRODUCT_CATALOG_DB["vitamin-c-serum"];
+  }
+  if (q.includes("sunscreen") || q.includes("spf") || q.includes("hydrating sunscreen")) {
+    return PRODUCT_CATALOG_DB["hydrating-sunscreen"];
+  }
+  if (q.includes("green tea") || q.includes("face wash") || q.includes("toner")) {
+    return PRODUCT_CATALOG_DB["green-tea-face-wash-toner"];
+  }
   if (q.includes("foundation") || q.includes("ace of face") || q.includes("shade") || q.includes("galao") || q.includes("galão")) {
     return PRODUCT_CATALOG_DB["ace-of-face"];
   }

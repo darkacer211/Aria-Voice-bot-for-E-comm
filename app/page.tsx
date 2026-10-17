@@ -87,19 +87,45 @@ export default function Home() {
         setSummary(data.summary);
         setIsSummaryFallback(Boolean(data.isFallback));
       } else {
+        const cancelCall = currentToolCalls.find((t) => t.toolName === "cancel_order");
+        const cancelResult = cancelCall?.result as { success?: boolean; order_id?: string } | undefined;
+        const cancelSuccess = cancelResult?.success === true;
+
+        const orderCall = currentToolCalls.find((t) => t.toolName === "get_order_details");
+        const orderResult = orderCall?.result as { canonical_id?: string; order?: { status?: string } } | undefined;
+
+        const orderId =
+          cancelResult?.order_id ||
+          (cancelCall?.args as { order_id?: string })?.order_id ||
+          orderResult?.canonical_id ||
+          (orderCall?.args as { order_id?: string })?.order_id ||
+          null;
+
+        let resolution: PostCallSummaryType["resolution_status"] = "RESOLVED";
+        let summaryText = "Call concluded with Aria specialist.";
+        let policyText = "Aria Brand Policy";
+
+        if (cancelCall) {
+          if (cancelSuccess) {
+            resolution = "RESOLVED";
+            summaryText = `Order ${orderId || "ORD-103"} was successfully cancelled in the database. Full refund initiated.`;
+            policyText = "Cancellation Policy: Processing orders eligible for full refund.";
+          } else {
+            resolution = "OUT_OF_POLICY";
+            summaryText = `Customer requested cancellation for order ${orderId || "ORD-101"}. Cancellation was denied because the order is out for delivery. Doorstep refusal recommended.`;
+            policyText = "Cancellation Policy: Shipped or Out for Delivery orders cannot be cancelled online.";
+          }
+        }
+
         setSummary({
-          customer_intent: currentToolCalls.some((t) => t.toolName === "cancel_order")
-            ? "CANCELLATION_REQUEST"
-            : "ORDER_TRACKING",
-          order_id:
-            (currentToolCalls[0]?.args as { order_id?: string })?.order_id ||
-            ((currentToolCalls[0]?.result as { order_id?: string })?.order_id ?? null),
-          resolution_status: "RESOLVED",
+          customer_intent: cancelCall ? "CANCELLATION_REQUEST" : "ORDER_TRACKING",
+          order_id: orderId,
+          resolution_status: resolution,
           call_summary:
-            currentTurns.length > 0
+            currentTurns.length > 0 && !cancelCall
               ? "Completed voice interaction with Aria customer concierge."
-              : "Call concluded with Aria specialist.",
-          policy_applied: "Aria Brand Policy",
+              : summaryText,
+          policy_applied: policyText,
           tools_used: currentToolCalls.map((t) => t.toolName),
           customer_sentiment: "neutral",
           follow_up_needed: false,
@@ -107,12 +133,18 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Failed to fetch post-call summary:", err);
+      const cancelCall = currentToolCalls.find((t) => t.toolName === "cancel_order");
+      const cancelSuccess = (cancelCall?.result as { success?: boolean })?.success === true;
       setSummary({
-        customer_intent: "OTHER",
-        order_id: null,
-        resolution_status: "RESOLVED",
-        call_summary: "Call completed with Aria.",
-        policy_applied: null,
+        customer_intent: cancelCall ? "CANCELLATION_REQUEST" : "OTHER",
+        order_id: (cancelCall?.args as { order_id?: string })?.order_id || null,
+        resolution_status: cancelCall ? (cancelSuccess ? "RESOLVED" : "OUT_OF_POLICY") : "RESOLVED",
+        call_summary: cancelCall
+          ? (cancelSuccess
+              ? "Order cancellation completed successfully in database."
+              : "Order cancellation denied because order is out for delivery.")
+          : "Call completed with Aria.",
+        policy_applied: cancelCall ? "Aria Cancellation Policy" : null,
         tools_used: currentToolCalls.map((t) => t.toolName),
         customer_sentiment: "neutral",
         follow_up_needed: false,
@@ -178,17 +210,29 @@ export default function Home() {
         },
         onTranscriptChunk: (turn) => {
           setTurns((prev) => {
-            // If the last turn has the same role and is within 4 seconds, append text
-            const last = prev[prev.length - 1];
-            if (last && last.role === turn.role) {
+            const existingIdx = prev.findIndex((t) => t.id === turn.id);
+            if (existingIdx !== -1) {
               const updated = [...prev];
-              updated[updated.length - 1] = {
-                ...last,
-                text: `${last.text} ${turn.text}`.trim(),
+              const existing = updated[existingIdx];
+              const delta = turn.text;
+              let merged = existing.text;
+              if (delta) {
+                if (!merged) {
+                  merged = delta;
+                } else if (merged.endsWith(" ") || delta.startsWith(" ") || /^[,.?!:;'\-]/.test(delta)) {
+                  merged = (merged + delta).replace(/  +/g, " ");
+                } else {
+                  merged = merged + " " + delta;
+                }
+              }
+              updated[existingIdx] = {
+                ...existing,
+                text: merged,
                 timestamp: turn.timestamp,
               };
               return updated;
             }
+
             return [...prev, turn];
           });
         },

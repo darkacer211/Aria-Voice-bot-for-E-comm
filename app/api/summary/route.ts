@@ -129,17 +129,23 @@ function buildFallbackSummary(body: SummaryRequestBody): PostCallSummary {
     followUpNeeded = true;
   }
 
+  let callSummary = "Call concluded with Aria specialist.";
+  if (cancelTool) {
+    if (cancelResult?.success) {
+      callSummary = `Order cancellation successfully executed for order ${orderId || "ORD-103"}. Database updated and refund initiated.`;
+    } else {
+      callSummary = `Customer requested cancellation for order ${orderId || "ORD-101"}. Cancellation was denied because the order is out for delivery. Doorstep refusal recommended.`;
+    }
+  } else if (body.transcript.length > 0) {
+    callSummary = `Customer consulted Aria regarding ${intent.toLowerCase().replace(/_/g, " ")}. Interaction concluded with status ${resolution}.`;
+  }
+
   return {
     customer_intent: intent,
     order_id: orderId,
     resolution_status: resolution,
-    call_summary:
-      body.transcript.length > 0
-        ? `Customer consulted Aria regarding ${intent.toLowerCase().replace(/_/g, " ")}. Interaction concluded with status ${resolution}.`
-        : cancelTool
-        ? `Order cancellation request executed for order ${orderId || "ORD-103"}. Database updated.`
-        : "Call concluded with Aria specialist.",
-    policy_applied: orderId ? "Aria order policy" : null,
+    call_summary: callSummary,
+    policy_applied: orderId ? (cancelTool ? "AURA Cancellation Policy" : "AURA order policy") : null,
     tools_used: toolsUsed,
     customer_sentiment: "neutral",
     follow_up_needed: followUpNeeded,
@@ -147,8 +153,9 @@ function buildFallbackSummary(body: SummaryRequestBody): PostCallSummary {
 }
 
 export async function POST(req: NextRequest) {
+  let body: SummaryRequestBody = { transcript: [] };
   try {
-    const body: SummaryRequestBody = await req.json();
+    body = await req.json();
 
     const userTurns = (body.transcript || []).filter((t) => t.role === "user");
 
@@ -187,7 +194,7 @@ export async function POST(req: NextRequest) {
       .join("\n\n");
 
     const prompt = `
-You are the post-call quality assurance system for Aria customer calls handled by voice agent Aria.
+You are the post-call quality assurance system for AURA customer calls handled by voice agent Aria.
 Analyze the following completed customer call transcript and tool execution log.
 Produce a strictly validated JSON summary according to the required schema.
 
@@ -200,12 +207,12 @@ ${formattedTools || "No tools were invoked during this call."}
 INSTRUCTIONS:
 1. Identify the primary customer_intent.
 2. Only set order_id if a valid order ID was identified or looked up (e.g., "ORD-101"). Otherwise set to null.
-3. resolution_status must reflect the outcome:
-   - RESOLVED: Question answered, policy explained, or eligible request confirmed.
-   - OUT_OF_POLICY: Customer requested something outside policy (e.g. return after 14 days, cancel shipped order) and was politely denied.
-   - OUT_OF_SCOPE: Inquiries unrelated to Aria (flights, general trivia).
+3. resolution_status must reflect the true outcome:
+   - RESOLVED: Question answered, policy explained, or eligible request confirmed (e.g. ORD-103 cancellation succeeded).
+   - OUT_OF_POLICY: Customer requested something outside policy (e.g. return after 14 days, or cancelling an Out for Delivery / Shipped order like ORD-101) and was denied. If cancellation of ORD-101 was requested, resolution_status MUST be OUT_OF_POLICY.
+   - OUT_OF_SCOPE: Inquiries unrelated to AURA (flights, general trivia, weather, coding).
    - NEEDS_FOLLOW_UP: Unresolved issue or technical failure.
-4. Keep call_summary to 1-3 concise sentences.
+4. Keep call_summary to 1-3 concise sentences. If cancellation was requested for an out-for-delivery order (like ORD-101), call_summary MUST state that the order was NOT cancelled and doorstep refusal was advised.
 5. Identify customer_sentiment (positive, neutral, negative).
 `.trim();
 
@@ -238,8 +245,7 @@ INSTRUCTIONS:
     return NextResponse.json({ summary: enhancedSummary, isFallback: false });
   } catch (err: unknown) {
     console.error("[/api/summary error]:", err);
-    // Even if Gemini API errors out, return clean fallback JSON
-    const body: SummaryRequestBody = await req.json().catch(() => ({ transcript: [] }));
+    // Even if Gemini API errors out, return clean fallback JSON with actual request body
     const fallback = buildFallbackSummary(body);
     const enhancedFallback: PostCallSummary = {
       ...fallback,

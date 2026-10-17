@@ -1,6 +1,6 @@
-# Implementation Plan: "Aria" – AI Voice Customer Support Agent (Aura Skincare)
+# Implementation Plan: "Aria" – AI Voice Customer Support Agent (AURA)
 
-An end-to-end, production-ready implementation plan for building a browser-based AI Voice Customer Support Agent called **"Aria"** for the fictional D2C brand **"Aura Skincare"**, powered by the **Gemini Live API** (native speech-to-speech) and **Next.js**.
+An end-to-end, production-ready implementation plan for building a browser-based AI Voice Customer Support Agent called **"Aria"** for the fictional D2C brand **"AURA"**, powered by the **Gemini Live API** (native speech-to-speech) and **Next.js**.
 
 ---
 
@@ -194,7 +194,7 @@ c:/Users/athar/AI Voice CX Agent/
 
 ### Phase 5: Persona & Prompt Engineering
 - [x] Implement system prompt in `/lib/prompt.ts`:
-  - **Persona**: Aria, friendly, warm, professional Indian customer-support specialist at Aura Skincare. Default to English; match Hindi/Hinglish if spoken.
+  - **Persona**: Aria, friendly, warm, professional Indian customer-support specialist at AURA. Default to English; match Hindi/Hinglish if spoken.
   - **Voice Rules**: 1–2 short sentences per turn, no markdown, no URLs, no bullet lists, read IDs digit-by-digit ("O R D, one zero one"), read prices naturally ("six hundred ninety-nine rupees").
   - **Single Question**: Ask only one question at a time.
   - **Tool Bridge**: Short natural acknowledgment ("Sure, let me check that for you") before invoking the tool to avoid dead air.
@@ -211,7 +211,7 @@ c:/Users/athar/AI Voice CX Agent/
 
 ### Phase 7: UI & State Machine
 - [x] Implement `/app/page.tsx` and modular components:
-  - **Header & Brand**: Aura Skincare branding with subtle warm gradient aesthetic.
+  - **Header & Brand**: AURA branding with subtle warm gradient aesthetic.
   - **Call Controls**: Start Call (pre-warms AudioContext and fetches token) / End Call. Disabled states to prevent double-clicking.
   - **State Pill**: Clear badges for `Idle`, `Connecting`, `Listening`, `Thinking`, `Speaking`, `Error/Reconnecting`.
   - **Audio Level Meter**: Smooth live visual bar indicator of user speech volume.

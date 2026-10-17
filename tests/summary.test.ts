@@ -38,4 +38,37 @@ describe("Post-Call Summary Schema & Logic", () => {
     expect(emptySummary.resolution_status).toBe("UNRESOLVED");
     expect(emptySummary.tools_used).toHaveLength(0);
   });
+
+  it("accurately classifies cancellation outcomes: OUT_OF_POLICY for denied orders and RESOLVED for cancellable orders", () => {
+    const deniedSummary: PostCallSummary = {
+      customer_intent: "CANCELLATION_REQUEST",
+      order_id: "ORD-101",
+      resolution_status: "OUT_OF_POLICY",
+      call_summary:
+        "Customer requested cancellation for order ORD-101. Cancellation was denied because the order is out for delivery. Doorstep refusal recommended.",
+      policy_applied: "Cancellation Policy: Shipped or Out for Delivery orders cannot be cancelled online.",
+      tools_used: ["cancel_order"],
+      customer_sentiment: "neutral",
+      follow_up_needed: false,
+    };
+
+    expect(deniedSummary.resolution_status).toBe("OUT_OF_POLICY");
+    expect(deniedSummary.order_id).toBe("ORD-101");
+    expect(deniedSummary.call_summary).toContain("denied");
+
+    const approvedSummary: PostCallSummary = {
+      customer_intent: "CANCELLATION_REQUEST",
+      order_id: "ORD-103",
+      resolution_status: "RESOLVED",
+      call_summary: "Order ORD-103 was successfully cancelled in the database. Full refund initiated.",
+      policy_applied: "Cancellation Policy: Processing orders eligible for full refund.",
+      tools_used: ["cancel_order"],
+      customer_sentiment: "positive",
+      follow_up_needed: false,
+    };
+
+    expect(approvedSummary.resolution_status).toBe("RESOLVED");
+    expect(approvedSummary.order_id).toBe("ORD-103");
+  });
 });
+

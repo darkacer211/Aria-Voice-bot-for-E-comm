@@ -1,12 +1,12 @@
-# Aria – AI Voice Customer Support Agent
+# AURA – Premium Skincare with Aria AI Voice Assistant
 
-A production-ready, browser-based native speech-to-speech AI Voice Customer Support Agent built for **Aria**, a premium D2C organic beauty and skincare brand. Powered by the **Gemini Live API** via `@google/genai`, **Next.js 16 (App Router)**, **TypeScript**, and **Web Audio API**.
+A production-ready, browser-based native speech-to-speech AI Voice Customer Support Agent built for **AURA**, a fictional premium D2C organic Indian skincare brand (Datastraw Assessment Test). Powered by the **Gemini Live API** via `@google/genai`, **Next.js 16 (App Router)**, **TypeScript**, and **Web Audio API**.
 
 ---
 
 ## 1. System Architecture
 
-Aria utilizes a hybrid architecture: real-time, low-latency audio streaming directly between the browser and Gemini Live over WebSockets using short-lived, locked **ephemeral tokens**, combined with a **Next.js server backend** for authoritative policy computations, database lookups, and structured post-call summaries.
+Aria utilizes a hybrid architecture: real-time, low-latency audio streaming directly between the browser and Gemini Live over WebSockets using short-lived, locked **ephemeral tokens**, combined with a **Next.js server backend** for authoritative policy computations, database lookups, and structured post-call summaries (via `gemini-3.5-flash-lite`).
 
 ```mermaid
 sequenceDiagram

@@ -36,7 +36,7 @@ export function computePolicyFlags(
   } else if (returnWindowOpen) {
     returnEligibilityNote = `The 7-day return window is OPEN (delivered ${daysSinceDelivery} day${daysSinceDelivery === 1 ? "" : "s"} ago). Remind the customer that the product must be ${CONFIG.POLICIES.RETURNS.REQUIREMENTS}. You must ask if the product is opened or used before confirming eligibility.`;
   } else {
-    returnEligibilityNote = `The 7-day return window is CLOSED. This order was delivered ${daysSinceDelivery} days ago. Aria policy strictly permits returns only within 7 days of delivery. Politely deny the return request.`;
+    returnEligibilityNote = `The 7-day return window is CLOSED. This order was delivered ${daysSinceDelivery} days ago. AURA policy strictly permits returns only within 7 days of delivery. Politely deny the return request.`;
   }
 
   // 3. Damaged/Defective Reporting: Within 48 hours (2 days) of delivery, for replacement
@@ -136,16 +136,20 @@ export function cancelOrder(rawOrderId: string | null | undefined, reason?: stri
     return {
       success: false,
       error: "ORDER_NOT_FOUND",
-      message: `No order found matching ${canonicalId} in the Aria database.`,
+      message: `No order found matching ${canonicalId} in the AURA database.`,
     };
   }
 
   if (order.status !== CONFIG.POLICIES.CANCELLATIONS.ALLOWED_STATUS) {
     return {
       success: false,
+      cancellation_status: "DENIED",
+      can_cancel: false,
       order_id: canonicalId,
       current_status: order.status,
-      message: `Order ${canonicalId} cannot be cancelled because its current status is '${order.status}'. ${CONFIG.POLICIES.CANCELLATIONS.NON_CANCELLABLE_NOTE}`,
+      error: "CANCELLATION_DENIED_OUT_FOR_DELIVERY",
+      message: `CANCELLATION REJECTED: Order ${canonicalId} CANNOT be cancelled because its current status is '${order.status}'. ${CONFIG.POLICIES.CANCELLATIONS.NON_CANCELLABLE_NOTE}`,
+      instructions_for_agent: `You MUST authoritatively tell the customer that order ${canonicalId} CANNOT be cancelled because it is already '${order.status}'. NEVER agree or confirm cancellation. Instruct the customer to refuse delivery at the doorstep for a full refund.`,
     };
   }
 
@@ -157,7 +161,7 @@ export function cancelOrder(rawOrderId: string | null | undefined, reason?: stri
     success: true,
     order_id: canonicalId,
     new_status: "Cancelled",
-    message: `Order ${canonicalId} has been successfully cancelled in the Aria database.`,
+    message: `Order ${canonicalId} has been successfully cancelled in the AURA database.`,
     customer_name: order.customerName,
     items: order.items,
     reason: reason || "Customer voice request",

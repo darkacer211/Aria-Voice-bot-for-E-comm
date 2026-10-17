@@ -54,6 +54,7 @@ export class GeminiLiveClient {
   private state: LiveSessionState = "idle";
   private callbacks: GeminiLiveClientCallbacks;
   private currentTurnId: string = "";
+  private currentUserTurnId: string = "";
   private isModelSpeaking: boolean = false;
   private hasEmittedGreeting: boolean = false;
 
@@ -92,6 +93,9 @@ export class GeminiLiveClient {
       // Construct live connect configuration
       const config: Record<string, unknown> = {
         responseModalities: [Modality.AUDIO],
+        generationConfig: {
+          temperature: 0.1,
+        },
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
@@ -159,7 +163,7 @@ export class GeminiLiveClient {
               turns: [
                 {
                   role: "user",
-                  parts: [{ text: "[Customer initiates call. Please greet warm and friendly once as Aria]" }],
+                  parts: [{ text: "[Customer initiates call. Please greet warm and friendly once as Aria from AURA]" }],
                 },
               ],
               turnComplete: true,
@@ -244,21 +248,11 @@ export class GeminiLiveClient {
           };
           this.callbacks.onToolCall(toolRecord);
 
-          // If cancel_order was invoked and succeeded, record explicit confirmation in transcript
-          if (fc.name === "cancel_order" && (result as { success?: boolean })?.success) {
-            const oid = (result as { order_id?: string })?.order_id || "ORD-103";
-            this.callbacks.onTranscriptChunk({
-              id: `tool_cancel_${Date.now()}`,
-              role: "model",
-              text: `Order ${oid} has been successfully cancelled in the Aria database.`,
-              timestamp: new Date().toLocaleTimeString(),
-            });
-          }
-
           functionResponses.push({
             id: fc.id || `call_${Date.now()}`,
             name: fc.name,
             response: {
+              ...result,
               result,
               output: result,
             },
@@ -285,6 +279,8 @@ export class GeminiLiveClient {
       if (content.interrupted) {
         console.log("[GeminiLiveClient] Interrupted by user speech (barge-in)");
         this.isModelSpeaking = false;
+        this.currentTurnId = "";
+        this.currentUserTurnId = "";
         this.callbacks.onInterrupted();
         this.setState("listening");
         return;
@@ -293,8 +289,11 @@ export class GeminiLiveClient {
       // Handle User Input Transcription
       const userText = content.inputTranscription?.text || content.interimInputTranscription?.text;
       if (userText) {
+        if (!this.currentUserTurnId) {
+          this.currentUserTurnId = `user_${Date.now()}`;
+        }
         const turn: TranscriptTurn = {
-          id: `user_${Date.now()}`,
+          id: this.currentUserTurnId,
           role: "user",
           text: userText,
           timestamp: new Date().toLocaleTimeString(),
@@ -305,9 +304,12 @@ export class GeminiLiveClient {
 
       // Handle Model Output Transcription
       if (content.outputTranscription?.text) {
+        if (!this.currentTurnId) {
+          this.currentTurnId = `model_${Date.now()}`;
+        }
         const text = content.outputTranscription.text;
         const turn: TranscriptTurn = {
-          id: this.currentTurnId || `model_${Date.now()}`,
+          id: this.currentTurnId,
           role: "model",
           text,
           timestamp: new Date().toLocaleTimeString(),
@@ -315,38 +317,24 @@ export class GeminiLiveClient {
         this.callbacks.onTranscriptChunk(turn);
       }
 
-      // Handle Audio Chunks & Direct Text Parts
+      // Handle Audio Chunks
       if (content.modelTurn?.parts) {
         for (const part of content.modelTurn.parts) {
           if (part.inlineData?.data) {
             this.isModelSpeaking = true;
             this.setState("speaking");
-            if (!this.hasEmittedGreeting) {
-              this.hasEmittedGreeting = true;
-              this.callbacks.onTranscriptChunk({
-                id: "aria_greeting",
-                role: "model",
-                text: "Hello! Welcome to Aria. I'm Aria, how can I help you today?",
-                timestamp: new Date().toLocaleTimeString(),
-              });
-            }
             this.callbacks.onAudioData(part.inlineData.data);
           }
-          if (part.text && !part.thought) {
-            const turn: TranscriptTurn = {
-              id: this.currentTurnId || `model_${Date.now()}`,
-              role: "model",
-              text: part.text,
-              timestamp: new Date().toLocaleTimeString(),
-            };
-            this.callbacks.onTranscriptChunk(turn);
-          }
+          // Note: We do NOT emit part.text to customer transcript.
+          // In Gemini 2.5 Live audio mode, part.text contains internal model thoughts/plans.
+          // The authentic spoken output is streamed via outputTranscription above.
         }
       }
 
       // Handle Turn Completion
       if (content.turnComplete) {
         this.currentTurnId = "";
+        this.currentUserTurnId = "";
         // If the model finished generating and playback has also ended, resume listening
         if (!this.isModelSpeaking && this.state !== "idle") {
           this.setState("listening");
@@ -367,6 +355,10 @@ export class GeminiLiveClient {
     }
   }
 
+  private speechHangoverChunks: number = 0;
+  private readonly MAX_HANGOVER_CHUNKS: number = 25; // ~500ms trailing silence buffer for server VAD
+  private readonly SPEECH_THRESHOLD: number = 0.014;
+
   /**
    * Stream a raw 16kHz PCM16 audio chunk (base64 string).
    * Implements strict Acoustic Echo & Thinking Gating to prevent speaker output
@@ -377,27 +369,39 @@ export class GeminiLiveClient {
 
     // 1. TOOL EXECUTION & THINKING GATING:
     // When Aria is thinking or querying backend tools, NEVER forward mic audio to Gemini.
-    // Otherwise, speaker echo of the bridge phrase ("Sure, let me check that for you")
-    // or room ambient noise will be interpreted by Gemini as user barge-in,
-    // which cancels the tool call turn and causes Gemini to freeze without answering!
     if (this.state === "thinking") {
+      this.speechHangoverChunks = 0;
       return;
     }
 
     // 2. ACOUSTIC ECHO GATING & BARGE-IN:
     // When Aria is actively speaking, drop speaker audio bleed.
-    // Speaker audio reflecting into a laptop mic is typically 0.05 - 0.16 RMS.
-    // A deliberate user barge-in speech is typically >= 0.22 RMS.
     if (this.isModelSpeaking) {
       const BARGE_IN_THRESHOLD = 0.22;
       if (rms < BARGE_IN_THRESHOLD) {
+        this.speechHangoverChunks = 0;
         return; // Suppress speaker echo feedback
       }
 
       console.log("[GeminiLiveClient] Intentional user barge-in detected, RMS:", rms);
       this.isModelSpeaking = false;
+      this.speechHangoverChunks = 0;
       this.callbacks.onInterrupted();
       this.setState("listening");
+    }
+
+    // 3. VOICE ACTIVITY DETECTION & TRAILING HANGOVER GATING:
+    // Only stream mic chunks when speech is present or during the post-speech trailing buffer.
+    // Suppresses room background noise, fan hiss, or empty packets from triggering server barge-in.
+    if (rms >= this.SPEECH_THRESHOLD) {
+      this.speechHangoverChunks = this.MAX_HANGOVER_CHUNKS;
+    } else {
+      if (this.speechHangoverChunks > 0) {
+        this.speechHangoverChunks--;
+      } else {
+        // Complete silence or ambient room floor
+        return;
+      }
     }
 
     try {
@@ -419,11 +423,14 @@ export class GeminiLiveClient {
     if (!this.session) return;
 
     this.isModelSpeaking = false;
+    this.speechHangoverChunks = 0;
+    this.currentUserTurnId = `user_${Date.now()}`;
+    this.currentTurnId = "";
     this.setState("thinking");
 
     // Add immediate user turn to transcript
     this.callbacks.onTranscriptChunk({
-      id: `user_${Date.now()}`,
+      id: this.currentUserTurnId,
       role: "user",
       text,
       timestamp: new Date().toLocaleTimeString(),

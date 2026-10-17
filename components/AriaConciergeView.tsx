@@ -156,20 +156,20 @@ export const AriaConciergeView: React.FC<Props> = ({
   // Compute dynamic heading & instruction
   let statusHeading = "Ready when you are";
   let statusInstruction =
-    'Click "Start Call with Aria" and allow microphone access to talk directly with your dedicated beauty & skincare concierge.';
+    'Click "Start Call with Aria" and allow microphone access to talk directly with Aria, your AURA support specialist.';
 
   if (isConnecting) {
     statusHeading = "Connecting to Aria...";
     statusInstruction = "Establishing secure Gemini Live WebSocket audio session with 16kHz low-latency streaming.";
   } else if (liveState === "listening") {
     statusHeading = "Aria is listening...";
-    statusInstruction = "Speak naturally into your microphone. Aria can advise on undertones, product formulas, or look up orders in real time.";
+    statusInstruction = "Speak naturally into your microphone. Aria can answer skincare questions, explain brand policies, or look up orders in real time.";
   } else if (liveState === "speaking") {
     statusHeading = "Aria is speaking...";
     statusInstruction = "Listening to Aria's voice response. Feel free to speak anytime — barge-in interruption is active.";
   } else if (liveState === "thinking") {
     statusHeading = "Aria is processing...";
-    statusInstruction = "Consulting Aria brand policies, order database, and catalog actives...";
+    statusInstruction = "Consulting AURA brand policies, order database, and catalog actives...";
   } else if (liveState === "error") {
     statusHeading = "Connection Interrupted";
     statusInstruction = "There was an issue connecting to the Gemini Live session. Please check your network or API key and retry.";
@@ -187,7 +187,7 @@ export const AriaConciergeView: React.FC<Props> = ({
           className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-[#796e65] hover:text-[#4a2d30] transition cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Return to Aria Store</span>
+          <span>Return to AURA Store</span>
         </button>
 
         <div className="flex items-center gap-4">
@@ -231,19 +231,19 @@ export const AriaConciergeView: React.FC<Props> = ({
 
           {/* Brand Name Beneath Logo */}
           <h1 className="font-serif-luxury text-3xl md:text-4xl text-[#3c2225] font-light tracking-wide mb-1.5">
-            Aria
+            AURA
           </h1>
 
           {/* Aria Voice CX Specialist Badge & Live State Indicator */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#f3ece4] border border-[#d89a9e]/50 text-xs text-[#82464b] font-medium tracking-wider uppercase">
-              <span>Aria • Voice CX Specialist</span>
+              <span>Aria • AI Voice Assistant</span>
             </div>
             <LiveStateIndicator state={liveState} />
           </div>
 
           <p className="text-sm text-[#796e65] font-light max-w-sm">
-            Your personal AI beauty &amp; skincare concierge
+            Aria, your AI Voice Customer Support Specialist for AURA
           </p>
         </div>
 
@@ -354,32 +354,46 @@ export const AriaConciergeView: React.FC<Props> = ({
           {/* Suggested Inquiry Pills (Clickable) */}
           <div className="w-full pt-6 border-t border-[#f0e4dc]">
             <div className="text-[10px] uppercase tracking-widest text-[#93857b] font-semibold mb-3">
-              Suggested Inquiries:
+              Suggested Test Inquiries (Datastraw Assignment Criteria):
             </div>
             <div className="flex flex-wrap justify-center gap-2.5">
               <button
-                onClick={() => handleSuggestionClick("Help me find my shade in Ace of Face")}
-                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
+                onClick={() => handleSuggestionClick("Where is my order ORD-101?")}
+                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-3.5 py-1.5 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
               >
-                &quot;Help me find my shade in Ace of Face&quot;
+                &quot;Where is my order ORD-101?&quot;
               </button>
               <button
-                onClick={() => handleSuggestionClick("Ingredients in Glide Peptide Serum?")}
-                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
+                onClick={() => handleSuggestionClick("Can I cancel ORD-101?")}
+                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-3.5 py-1.5 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
               >
-                &quot;Ingredients in Glide Peptide Serum?&quot;
+                &quot;Can I cancel ORD-101?&quot;
               </button>
               <button
-                onClick={() => handleSuggestionClick("Morning barrier repair routine")}
-                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
+                onClick={() => handleSuggestionClick("Can you book me a flight to Goa?")}
+                className="text-xs bg-[#faecea] hover:bg-[#f6dad5] text-[#ba1a1a] px-3.5 py-1.5 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#ba1a1a]"
+                title="Tests Rule #1 Domain Restriction (Out-of-Scope)"
               >
-                &quot;Morning barrier repair routine&quot;
+                &quot;Can you book me a flight to Goa?&quot; (Out-of-Scope)
               </button>
               <button
-                onClick={() => handleSuggestionClick("Track my recent order")}
-                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-4 py-2 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
+                onClick={() => handleSuggestionClick("I bought this 20 days ago and opened it, can I return it?")}
+                className="text-xs bg-[#faecea] hover:bg-[#f6dad5] text-[#ba1a1a] px-3.5 py-1.5 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#ba1a1a]"
+                title="Tests Policy Enforcement Guardrails"
               >
-                &quot;Track my recent order&quot;
+                &quot;Return 20-day opened item?&quot; (Policy)
+              </button>
+              <button
+                onClick={() => handleSuggestionClick("Tell me about the Vitamin C Serum")}
+                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-3.5 py-1.5 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
+              >
+                &quot;Vitamin C Serum details&quot;
+              </button>
+              <button
+                onClick={() => handleSuggestionClick("What is your morning skincare routine?")}
+                className="text-xs bg-[#f8f5f0] hover:bg-[#ebdcd3] text-[#4a2d30] px-3.5 py-1.5 rounded-full border border-[#ebdcd3] transition shadow-2xs cursor-pointer hover:border-[#d89a9e]"
+              >
+                &quot;Morning skincare routine&quot;
               </button>
             </div>
           </div>
@@ -842,9 +856,43 @@ export const AriaConciergeView: React.FC<Props> = ({
                     >
                       <div className="flex items-center justify-between text-[#4a2d30] font-bold mb-1">
                         <span>function: {tc.toolName}</span>
-                        <span className="text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                          Success
-                        </span>
+                        {(() => {
+                          if (tc.toolName === "cancel_order") {
+                            const res = tc.result as { success?: boolean; status?: string } | undefined;
+                            if (res?.success) {
+                              return (
+                                <span className="text-[10px] text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                                  ✓ Cancelled in DB
+                                </span>
+                              );
+                            }
+                            return (
+                              <span className="text-[10px] text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full font-bold">
+                                ✗ Denied ({res?.status === "out_for_delivery" ? "Out for Delivery" : "Policy"})
+                              </span>
+                            );
+                          }
+                          if (tc.toolName === "get_order_details") {
+                            const res = tc.result as { found?: boolean; order?: { status?: string } } | undefined;
+                            if (res?.found) {
+                              return (
+                                <span className="text-[10px] text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full font-semibold">
+                                  Found ({res.order?.status || "Active"})
+                                </span>
+                              );
+                            }
+                            return (
+                              <span className="text-[10px] text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full font-semibold">
+                                Order Not Found
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                              Executed
+                            </span>
+                          );
+                        })()}
                       </div>
                       <div className="text-[11px] text-[#796e65] mb-2">
                         args: {JSON.stringify(tc.args)}
@@ -899,7 +947,7 @@ export const AriaConciergeView: React.FC<Props> = ({
       <footer className="w-full pt-6 border-t border-[#ebdcd3]/70 text-center">
         <p className="text-xs text-[#8c7f76] flex items-center justify-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-[#9a4b52]" />
-          <span>Private &amp; secure consultation • Aria</span>
+          <span>Private &amp; secure consultation • AURA</span>
         </p>
       </footer>
     </div>
